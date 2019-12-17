@@ -11,7 +11,28 @@ public class Main {
 		Context context = new Context(width, height, strings);
 		Game game = new Game(context);
 		Window window = new Window(context);
-		new Renderer(context, window, game).run();
+		Renderer renderer = new Renderer(context, window, game);
+		
+		long lastFrame = System.nanoTime();
+		while (window.isAlive()) {
+			long now = System.nanoTime();
+			double delta = (now - lastFrame) / 1e9;
+			lastFrame = now;
+			
+			if (game.getScenes().size() == 0) {
+				window.close();
+				break;
+			}
+			
+			renderer.draw();
+			
+			context.getInputEvents().flush();
+			context.getGameEvents().flush();
+			game.update(delta);
+			
+			window.swapBuffers();
+		}
+		
 		window.destroy();
 	}
 }

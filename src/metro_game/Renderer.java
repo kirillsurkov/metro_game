@@ -29,6 +29,14 @@ public class Renderer {
 		} catch (IOException e) {
 			System.out.println("Font not found");
 		}
+		
+		GL.createCapabilities();
+		GL11.glClearColor(0, 0, 0, 1);
+	}
+	
+	public void draw() {
+		GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
+		drawScene(m_game.getScenes().lastElement());
 	}
 	
 	private void drawScene(Scene scene) {
@@ -80,28 +88,6 @@ public class Renderer {
 				break;
 			}
 			}
-		}
-	}
-	
-	public void run() {
-		GL.createCapabilities();
-		
-		GL11.glClearColor(0, 0, 0, 1);
-		
-		long lastFrame = System.nanoTime();
-		while (m_window.isAlive()) {
-			long now = System.nanoTime();
-			double delta = (now - lastFrame) / 1e9;
-			lastFrame = now;
-			GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
-			if (m_game.getScenes().size() == 0) {
-				m_window.close();
-				break;
-			}
-			drawScene(m_game.getScenes().lastElement());
-			m_context.getInputEvents().flush();
-			m_game.update(delta);
-			m_window.swapBuffers();
 		}
 	}
 }

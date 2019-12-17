@@ -30,7 +30,6 @@ public class Game {
 			}
 		}
 
-		m_context.getGameEvents().flush();
 		for (GameEvent event : m_context.getGameEvents().getEvents()) {
 			switch (event.getType()) {
 			case SWITCH_SCENE: {
