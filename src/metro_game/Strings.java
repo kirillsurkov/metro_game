@@ -19,12 +19,16 @@ public class Strings {
 			m_translations.put("MENU_SETTINGS", "Settings");
 			m_translations.put("MENU_LANG", "Language");
 			m_translations.put("MENU_EXIT", "Exit game");
+			m_translations.put("MENU_BACK", "Back");
+			break;
 		}
 		case RU: {
 			m_translations.put("MENU_LEVELS", "Уровни");
 			m_translations.put("MENU_SETTINGS", "Настройки");
 			m_translations.put("MENU_LANG", "Язык");
 			m_translations.put("MENU_EXIT", "Выйти из игры");
+			m_translations.put("MENU_BACK", "Назад");
+			break;
 		}
 		}
 	}

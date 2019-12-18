@@ -1,9 +1,10 @@
-package metro_game;
+package metro_game.game;
 
 import java.util.Stack;
 
-import metro_game.events.GameEvent;
-import metro_game.events.SwitchSceneEvent;
+import metro_game.Context;
+import metro_game.game.events.GameEvent;
+import metro_game.game.events.SwitchSceneEvent;
 import metro_game.scenes.MainMenu;
 import metro_game.scenes.Scene;
 import metro_game.ui.events.InputEvent;

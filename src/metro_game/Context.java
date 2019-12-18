@@ -1,6 +1,6 @@
 package metro_game;
 
-import metro_game.events.GameEvent;
+import metro_game.game.events.GameEvent;
 import metro_game.ui.events.InputEvent;
 
 public class Context {

@@ -3,13 +3,11 @@ package metro_game.ui.primitives;
 public class Text extends Primitive {
 	public enum AlignmentX {
 		LEFT,
-		RIGHT,
 		CENTER
 	}
 	
 	public enum AlignmentY {
 		TOP,
-		BOTTOM,
 		CENTER
 	}
 	

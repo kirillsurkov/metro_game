@@ -1,4 +1,4 @@
-package metro_game.events;
+package metro_game.game.events;
 
 import metro_game.scenes.Scene;
 

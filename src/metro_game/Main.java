@@ -1,6 +1,8 @@
 package metro_game;
 
 import metro_game.Strings.Language;
+import metro_game.game.Game;
+import metro_game.render.Renderer;
 
 public class Main {
 	public static void main(String[] args) {
@@ -11,7 +13,7 @@ public class Main {
 		Context context = new Context(width, height, strings);
 		Game game = new Game(context);
 		Window window = new Window(context);
-		Renderer renderer = new Renderer(context, window, game);
+		Renderer renderer = new Renderer(context, game);
 		
 		long lastFrame = System.nanoTime();
 		while (window.isAlive()) {

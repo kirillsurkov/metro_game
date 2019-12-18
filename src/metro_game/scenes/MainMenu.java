@@ -1,7 +1,7 @@
 package metro_game.scenes;
 
 import metro_game.Context;
-import metro_game.events.SwitchSceneEvent;
+import metro_game.game.events.SwitchSceneEvent;
 import metro_game.ui.Button;
 import metro_game.ui.events.BackEvent;
 

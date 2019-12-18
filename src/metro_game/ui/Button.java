@@ -15,7 +15,8 @@ public class Button extends Widget {
 		m_color = new Color(1.0f, 0.0f, 0.0f, 1.0f);
 		addPrimitive(m_color);
 		addPrimitive(new Rect(0, 0, width, height));
-		addPrimitive(new Text(text, x + width / 2, y + height / 2, AlignmentX.CENTER, AlignmentY.CENTER));
+		addPrimitive(new Color(1.0f, 1.0f, 1.0f, 1.0f));
+		addPrimitive(new Text(text, width / 2.0f, 0, AlignmentX.CENTER, AlignmentY.TOP));
 	}
 	
 	@Override
