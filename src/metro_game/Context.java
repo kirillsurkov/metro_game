@@ -1,5 +1,6 @@
 package metro_game;
 
+import metro_game.Strings.Language;
 import metro_game.game.events.GameEvent;
 import metro_game.ui.events.InputEvent;
 
@@ -28,8 +29,16 @@ public class Context {
 		return m_height;
 	}
 	
+	public void setLanguage(Language language) {
+		m_strings.setLanguage(language);
+	}
+	
+	public Language getLanguage() {
+		return m_strings.getLanguage();
+	}
+	
 	public String getString(String key) {
-		return m_strings.get(key);
+		return m_strings.getString(key);
 	}
 	
 	public void setMousePos(double x, double y) {

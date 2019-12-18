@@ -7,7 +7,7 @@ import metro_game.ui.events.BackEvent;
 public class MainMenuSettings extends Scene {
 	public MainMenuSettings(Context context) {
 		super(context);
-		addUIChild(new ButtonWidget(context, context.getString("MENU_BACK"), 0.25f, 0.7f, 0.5f, 0.1f) {
+		addUIChild(new ButtonWidget(context, "MENU_BACK", 0.25f, 0.7f, 0.5f, 0.1f) {
 			@Override
 			protected void onClick(boolean up) {
 				super.onClick(up);

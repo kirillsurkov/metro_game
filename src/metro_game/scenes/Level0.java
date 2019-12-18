@@ -1,5 +1,9 @@
 package metro_game.scenes;
 
-public class Level0 {
+import metro_game.Context;
 
+public class Level0 extends LevelBase {
+	public Level0(Context context) {
+		super(context);
+	}
 }

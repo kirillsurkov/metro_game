@@ -83,6 +83,9 @@ public class Renderer {
 				float textX = text.getX();
 				float textY = text.getY();
 				String str = text.getText();
+				if (text.isTranslated()) {
+					str = m_context.getString(str);
+				}
 				Font font = m_fontCache.getFont("NotoSerif-Regular.ttf", text.getSize());
 				float strWidth = font.getStringWidth(str);
 				float advance = 0;

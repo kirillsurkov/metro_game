@@ -12,15 +12,17 @@ public class Text extends Primitive {
 	}
 	
 	private String m_text;
+	private boolean m_translated;
 	private int m_size;
 	private float m_x;
 	private float m_y;
 	private AlignmentX m_alignmentX;
 	private AlignmentY m_alignmentY;
 	
-	public Text(String text, int size, float x, float y, AlignmentX alignmentX, AlignmentY alignmentY) {
+	public Text(String text, boolean translated, int size, float x, float y, AlignmentX alignmentX, AlignmentY alignmentY) {
 		super(Type.TEXT);
 		m_text = text;
+		m_translated = translated;
 		m_size = size;
 		m_x = x;
 		m_y = y;
@@ -30,6 +32,10 @@ public class Text extends Primitive {
 	
 	public String getText() {
 		return m_text;
+	}
+	
+	public boolean isTranslated() {
+		return m_translated;
 	}
 	
 	public int getSize() {

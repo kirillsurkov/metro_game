@@ -1,6 +1,7 @@
 package metro_game.scenes;
 
 import metro_game.Context;
+import metro_game.Strings.Language;
 import metro_game.game.events.SwitchSceneEvent;
 import metro_game.ui.AlertWidget;
 import metro_game.ui.ButtonWidget;
@@ -10,7 +11,7 @@ public class MainMenu extends Scene {
 	public MainMenu(Context context) {
 		super(context);
 		
-		addUIChild(new ButtonWidget(context, context.getString("MENU_LEVELS"), 0.25f, 0.25f, 0.5f, 0.1f) {
+		addUIChild(new ButtonWidget(context, "MENU_LEVELS", 0.25f, 0.25f, 0.5f, 0.1f) {
 			@Override
 			protected void onClick(boolean up) {
 				super.onClick(up);
@@ -19,7 +20,7 @@ public class MainMenu extends Scene {
 				}
 			}
 		});
-		addUIChild(new ButtonWidget(context, context.getString("MENU_SETTINGS"), 0.25f, 0.4f, 0.5f, 0.1f) {
+		addUIChild(new ButtonWidget(context, "MENU_SETTINGS", 0.25f, 0.4f, 0.5f, 0.1f) {
 			@Override
 			protected void onClick(boolean up) {
 				super.onClick(up);
@@ -28,8 +29,17 @@ public class MainMenu extends Scene {
 				}
 			}
 		});
-		addUIChild(new ButtonWidget(context, context.getString("MENU_LANG"), 0.25f, 0.55f, 0.5f, 0.1f));
-		addUIChild(new ButtonWidget(context, context.getString("MENU_EXIT"), 0.25f, 0.7f, 0.5f, 0.1f) {
+		addUIChild(new ButtonWidget(context, "MENU_LANG", 0.25f, 0.55f, 0.5f, 0.1f) {
+			@Override
+			protected void onClick(boolean up) {
+				super.onClick(up);
+				if (up) {
+					int nextLanguage = (context.getLanguage().ordinal() + 1) % Language.values().length;
+					context.setLanguage(Language.values()[nextLanguage]);
+				}
+			}
+		});
+		addUIChild(new ButtonWidget(context, "MENU_EXIT", 0.25f, 0.7f, 0.5f, 0.1f) {
 			@Override
 			protected void onClick(boolean up) {
 				super.onClick(up);
@@ -43,7 +53,7 @@ public class MainMenu extends Scene {
 	@Override
 	public boolean onBack() {
 		if (getAlert() == null) {
-			setAlert(new AlertWidget(m_context, m_context.getString("ALERT_EXIT_CONFIRM"), new String[] {m_context.getString("ALERT_BUTTON_YES"), m_context.getString("ALERT_BUTTON_NO")}) {
+			setAlert(new AlertWidget(m_context, m_context.getString("ALERT_EXIT_CONFIRM"), new String[] {"ALERT_BUTTON_YES", "ALERT_BUTTON_NO"}) {
 				@Override
 				public void onButton(int index) {
 					if (index == 0) {

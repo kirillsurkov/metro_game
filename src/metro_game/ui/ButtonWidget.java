@@ -16,7 +16,7 @@ public class ButtonWidget extends Widget {
 		addPrimitive(m_color);
 		addPrimitive(new Rect(0, 0, width, height));
 		addPrimitive(new Color(1.0f, 1.0f, 1.0f, 1.0f));
-		addPrimitive(new Text(text, 56, width / 2.0f, 0, AlignmentX.CENTER, AlignmentY.TOP));
+		addPrimitive(new Text(text, true, 56, width / 2.0f, 0, AlignmentX.CENTER, AlignmentY.TOP));
 	}
 	
 	@Override
@@ -30,8 +30,5 @@ public class ButtonWidget extends Widget {
 		} else {
 			m_color.set(1.0f, 0.0f, 0.0f, 1.0f);
 		}
-	}
-	
-	public void update(float delta) {
 	}
 }
