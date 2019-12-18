@@ -2,6 +2,7 @@ package metro_game.ui;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 
 import metro_game.Context;
 import metro_game.Utils;
@@ -19,6 +20,8 @@ public class Widget {
 	private float m_width;
 	private float m_height;
 	private boolean m_mouseInside;
+	private boolean m_mouseDown;
+	private boolean m_needRemove;
 	
 	public Widget(Context context, float x, float y, float width, float height) {
 		m_context = context;
@@ -26,6 +29,9 @@ public class Widget {
 		m_relativeY = y;
 		m_width = width;
 		m_height = height;
+		m_mouseInside = false;
+		m_mouseDown = false;
+		m_needRemove = false;
 		m_primitives = new ArrayList<Primitive>();
 		m_children = new ArrayList<Widget>();
 		m_parent = null;
@@ -59,8 +65,12 @@ public class Widget {
 			switch (event.getType()) {
 			case MOUSE_BUTTON: {
 				MouseButtonEvent mouseButtonEvent = (MouseButtonEvent) event;
+				boolean up = mouseButtonEvent.isUp();
 				if (mouseInside) {
-					onClick(mouseButtonEvent.isUp());
+					if (m_mouseDown ^ !up) {
+						onClick(up);
+					}
+					m_mouseDown = !up;
 				}
 				break;
 			}
@@ -70,8 +80,16 @@ public class Widget {
 			}
 		}
 		m_mouseInside = mouseInside;
-		for (Widget child : m_children) {
+		Stack<Integer> toRemove = new Stack<Integer>();
+		for (int i = 0; i < m_children.size(); i++) {
+			Widget child = m_children.get(i);
 			child.update(delta);
+			if (child.isNeedRemove()) {
+				toRemove.push(i);
+			}
+		}
+		while (!toRemove.isEmpty()) {
+			m_children.remove((int) toRemove.pop());
 		}
 	}
 	
@@ -82,6 +100,12 @@ public class Widget {
 		widget.setParent(this);
 		m_children.add(widget);
 		return widget;
+	}
+	
+	public void removeChild(Widget widget) {
+		if (m_children.contains(widget)) {
+			m_children.remove(widget);
+		}
 	}
 	
 	public List<Primitive> getPrimitives() {
@@ -145,5 +169,13 @@ public class Widget {
 	
 	public void setRelativeY(int y) {
 		m_relativeY = y;
+	}
+	
+	public void setNeedRemove(boolean needRemove) {
+		m_needRemove = true;
+	}
+	
+	public boolean isNeedRemove() {
+		return m_needRemove;
 	}
 }

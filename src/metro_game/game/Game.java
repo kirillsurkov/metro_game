@@ -27,7 +27,9 @@ public class Game {
 	public void update(double delta) {
 		for (InputEvent event : m_context.getInputEvents().getEvents()) {
 			if (event.getType() == Type.BACK) {
-				m_scenes.pop();
+				if (!m_scenes.lastElement().onBack()) {
+					m_scenes.pop();
+				}
 			}
 		}
 
@@ -42,7 +44,11 @@ public class Game {
 		}
 		
 		if (m_scenes.size() > 0) {
-			m_scenes.lastElement().update(delta);
+			Scene scene = m_scenes.lastElement();
+			scene.update(delta);
+			if (scene.isNeedClose()) {
+				m_scenes.pop();
+			}
 		}
 	}
 }

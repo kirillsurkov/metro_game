@@ -12,14 +12,16 @@ public class Text extends Primitive {
 	}
 	
 	private String m_text;
+	private int m_size;
 	private float m_x;
 	private float m_y;
 	private AlignmentX m_alignmentX;
 	private AlignmentY m_alignmentY;
 	
-	public Text(String text, float x, float y, AlignmentX alignmentX, AlignmentY alignmentY) {
+	public Text(String text, int size, float x, float y, AlignmentX alignmentX, AlignmentY alignmentY) {
 		super(Type.TEXT);
 		m_text = text;
+		m_size = size;
 		m_x = x;
 		m_y = y;
 		m_alignmentX = alignmentX;
@@ -28,6 +30,10 @@ public class Text extends Primitive {
 	
 	public String getText() {
 		return m_text;
+	}
+	
+	public int getSize() {
+		return m_size;
 	}
 	
 	public float getX() {

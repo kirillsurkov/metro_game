@@ -7,16 +7,16 @@ import metro_game.ui.primitives.Text;
 import metro_game.ui.primitives.Text.AlignmentX;
 import metro_game.ui.primitives.Text.AlignmentY;
 
-public class Button extends Widget {
+public class ButtonWidget extends Widget {
 	private Color m_color;
 	
-	public Button(Context context, String text, float x, float y, float width, float height) {
+	public ButtonWidget(Context context, String text, float x, float y, float width, float height) {
 		super(context, x, y, width, height);
 		m_color = new Color(1.0f, 0.0f, 0.0f, 1.0f);
 		addPrimitive(m_color);
 		addPrimitive(new Rect(0, 0, width, height));
 		addPrimitive(new Color(1.0f, 1.0f, 1.0f, 1.0f));
-		addPrimitive(new Text(text, width / 2.0f, 0, AlignmentX.CENTER, AlignmentY.TOP));
+		addPrimitive(new Text(text, 56, width / 2.0f, 0, AlignmentX.CENTER, AlignmentY.TOP));
 	}
 	
 	@Override

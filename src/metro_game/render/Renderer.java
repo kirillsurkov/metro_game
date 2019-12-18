@@ -17,12 +17,12 @@ import metro_game.ui.primitives.Text;
 public class Renderer {
 	private Context m_context;
 	private Game m_game;
-	private Font m_font;
+	private FontCache m_fontCache;
 
 	public Renderer(Context context, Game game) {
 		m_context = context;
 		m_game = game;
-		m_font = new Font(m_context, "NotoSerif-Regular.ttf", 56);
+		m_fontCache = new FontCache(m_context);
 		
 		GL.createCapabilities();
 		GL11.glClearColor(0, 0, 0, 1);
@@ -83,20 +83,21 @@ public class Renderer {
 				float textX = text.getX();
 				float textY = text.getY();
 				String str = text.getText();
-				float strWidth = m_font.getStringWidth(str);
+				Font font = m_fontCache.getFont("NotoSerif-Regular.ttf", text.getSize());
+				float strWidth = font.getStringWidth(str);
 				float advance = 0;
 				GL11.glEnable(GL11.GL_TEXTURE_2D);
 				for (int i = 0; i < str.length(); i++) {
-					Font.GlyphInfo glyph = m_font.renderGlyph(str.charAt(i));
+					Font.GlyphInfo glyph = font.renderGlyph(str.charAt(i));
 					float w = glyph.getWidth();
 					float h = glyph.getHeight();
 					float offX = widgetX + textX + advance + glyph.getOffsetX();
-					float offY = widgetY + textY + glyph.getOffsetY() + m_font.getAscent();
+					float offY = widgetY + textY + glyph.getOffsetY() + font.getAscent();
 					if (text.getAlignmentX() == Text.AlignmentX.CENTER) {
 						offX -= strWidth / 2.0f;
 					}
 					if (text.getAlignmentY() == Text.AlignmentY.CENTER) {
-						offY -= m_font.getAscent() / 2.0f;
+						offY -= font.getAscent() / 2.0f;
 					}
 					GL11.glBindTexture(GL11.GL_TEXTURE_2D, glyph.getTexID());
 					GL11.glTexEnvi(GL11.GL_TEXTURE_ENV, GL11.GL_TEXTURE_ENV_MODE, GL11.GL_ADD);
