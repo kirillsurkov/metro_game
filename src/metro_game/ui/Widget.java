@@ -51,6 +51,10 @@ public class Widget {
 		return m_context;
 	}
 	
+	protected boolean isMouseDown() {
+		return m_mouseDown;
+	}
+	
 	public void update(double delta) {
 		float mouseX = (float) m_context.getMouseX() / m_context.getWidth();
 		float mouseY = (float) m_context.getMouseY() / m_context.getHeight();
@@ -66,11 +70,13 @@ public class Widget {
 			case MOUSE_BUTTON: {
 				MouseButtonEvent mouseButtonEvent = (MouseButtonEvent) event;
 				boolean up = mouseButtonEvent.isUp();
+				boolean click = m_mouseDown ^ !up;
+				m_mouseDown = !up;
 				if (mouseInside) {
-					if (m_mouseDown ^ !up) {
+					onHover(true);
+					if (click) {
 						onClick(up);
 					}
-					m_mouseDown = !up;
 				}
 				break;
 			}

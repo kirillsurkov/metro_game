@@ -22,18 +22,13 @@ public class ButtonWidget extends Widget {
 	@Override
 	public void onHover(boolean onWidget) {
 		if (onWidget) {
-			m_color.set(1.0f, 0.25f, 0.25f, 1.0f);
+			if (isMouseDown()) {
+				m_color.set(0.5f, 0.0f, 0.0f, 1.0f);
+			} else {
+				m_color.set(1.0f, 0.25f, 0.25f, 1.0f);
+			}
 		} else {
 			m_color.set(1.0f, 0.0f, 0.0f, 1.0f);
-		}
-	}
-	
-	@Override
-	protected void onClick(boolean up) {
-		if (up) {
-			m_color.set(1.0f, 0.25f, 0.25f, 1.0f);
-		} else {
-			m_color.set(0.5f, 0.0f, 0.0f, 1.0f);
 		}
 	}
 	
