@@ -6,21 +6,17 @@ import metro_game.game.shapes.RectShape;
 
 public class DummyBoxEntity extends GameEntity {
 	private RectShape m_shape;
+	private Body m_body;
 	
-	public DummyBoxEntity(float x, float y) {
-		m_shape = addShape(new RectShape(x, y, 0.1f, 0.1f, 0.0f));
-		addBody(new BoxBody(x, y));
-	}
-	
-	@Override
-	public void onPhysicsUpdate(Body body) {
-		m_shape.getPosition().set(body.getPosition());
-		m_shape.setRotation(body.getRotation());
+	public DummyBoxEntity(boolean dynamic, float x, float y, float width, float height, float rotation) {
+		m_shape = addShape(new RectShape(x, y, width, height, rotation));
+		m_body = addBody(new BoxBody(dynamic, x, y, width, height));
+		m_body.setRotation(rotation);
 	}
 	
 	@Override
 	public void update(double delta) {
-		m_shape.getPosition().x += delta * 0.5f;
-		m_shape.setRotation(m_shape.getRotation() + (float) delta * 180);
+		m_shape.getPosition().set(m_body.getPosition());
+		m_shape.setRotation(m_body.getRotation());
 	}
 }

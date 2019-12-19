@@ -1,16 +1,12 @@
 package metro_game.game;
 
-import java.util.List;
-import java.util.Map;
 import java.util.Stack;
 
 import metro_game.Context;
-import metro_game.game.entities.GameEntity;
 import metro_game.game.events.GameEvent;
 import metro_game.game.events.NewBodyEvent;
 import metro_game.game.events.SwitchSceneEvent;
 import metro_game.game.physics.Physics;
-import metro_game.game.physics.bodies.Body;
 import metro_game.scenes.MainMenu;
 import metro_game.scenes.Scene;
 import metro_game.ui.events.InputEvent;
@@ -60,21 +56,17 @@ public class Game {
 			}
 			case NEW_BODY: {
 				NewBodyEvent newBodyEvent = (NewBodyEvent) event;
-				m_physics.addBody(newBodyEvent.getOwner(), newBodyEvent.getBody());
+				m_physics.addBody(newBodyEvent.getBody());
 				break;
 			}
 			}
 		}
 		
-		for (Map.Entry<GameEntity, List<Body>> entry : m_physics.getBodies().entrySet()) {
-			GameEntity owner = entry.getKey();
-			for (Body body : entry.getValue()) {
-				owner.onPhysicsUpdate(body);
-			}
-		}
-		
 		if (m_scenes.size() > 0) {
 			Scene scene = m_scenes.lastElement();
+			if (!scene.isPaused()) {
+				m_physics.update(delta);
+			}
 			scene.update(delta);
 			if (scene.isNeedClose()) {
 				m_scenes.pop();

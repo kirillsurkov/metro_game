@@ -33,9 +33,6 @@ public class GameEntity {
 		return m_bodies;
 	}
 	
-	public void onPhysicsUpdate(Body body) {
-	}
-	
 	public void update(double delta) {
 	}
 }

@@ -112,10 +112,11 @@ public class Renderer {
 	
 	private void drawGameEntities(List<GameEntity> gameEntities) {
 		float aspect = m_context.getAspect();
+		float scale = 10;
 		
 		GL11.glMatrixMode(GL11.GL_PROJECTION);
 		GL11.glLoadIdentity();
-		GL11.glOrtho(-aspect, aspect, 1, -1, 1, -1);
+		GL11.glOrtho(-aspect * scale, aspect * scale, scale, -scale, 1, -1);
 		GL11.glMatrixMode(GL11.GL_MODELVIEW);
 		GL11.glColor4f(1, 0, 0, 1);
 		for (GameEntity gameEntity : gameEntities) {

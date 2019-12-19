@@ -13,6 +13,7 @@ import metro_game.ui.Widget;
 public class Scene {
 	protected Context m_context;
 	private boolean m_ready;
+	private boolean m_paused;
 	private boolean m_needClose;
 	private List<GameEntity> m_gameEntities;
 	private Widget m_rootUI;
@@ -21,6 +22,7 @@ public class Scene {
 	public Scene(Context context) {
 		m_context = context;
 		m_ready = false;
+		m_paused = false;
 		m_needClose = false;
 		m_gameEntities = new ArrayList<GameEntity>();
 		m_rootUI = new Widget(context, 0, 0, context.getWidth(), context.getHeight());
@@ -36,7 +38,7 @@ public class Scene {
 		}
 		m_gameEntities.add(gameEntity);
 		for (Body body : gameEntity.getBodies()) {
-			m_context.getGameEvents().pushEvent(new NewBodyEvent(gameEntity, body));
+			m_context.getGameEvents().pushEvent(new NewBodyEvent(body));
 		}
 		return gameEntity;
 	}
@@ -53,6 +55,10 @@ public class Scene {
 		m_needClose = needClose;
 	}
 	
+	public boolean isPaused() {
+		return m_paused;
+	}
+	
 	public boolean isNeedClose() {
 		return m_needClose;
 	}
@@ -67,11 +73,15 @@ public class Scene {
 	
 	protected void setAlert(AlertWidget alert) {
 		m_alert = addUIChild(alert);
+		if (m_alert != null) {
+			m_paused = true;
+		}
 	}
 	
 	protected void closeAlert() {
 		m_alert.setNeedRemove(true);
 		m_alert = null;
+		m_paused = false;
 	}
 	
 	protected AlertWidget getAlert() {
@@ -79,13 +89,14 @@ public class Scene {
 	}
 	
 	public void update(double delta) {
-		if (m_alert == null) {
-			m_rootUI.update(delta);
+		if (m_alert != null) {
+			m_alert.update(delta);
+		}
+		if (!m_paused) {
 			for (GameEntity gameEntity : m_gameEntities) {
 				gameEntity.update(delta);
 			}
-		} else {
-			m_alert.update(delta);
+			m_rootUI.update(delta);
 		}
 	}
 	
