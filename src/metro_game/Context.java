@@ -29,6 +29,10 @@ public class Context {
 		return m_height;
 	}
 	
+	public float getAspect() {
+		return 1.0f * m_width / m_height;
+	}
+	
 	public void setLanguage(Language language) {
 		m_strings.setLanguage(language);
 	}

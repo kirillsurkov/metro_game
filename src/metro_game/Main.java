@@ -2,6 +2,7 @@ package metro_game;
 
 import metro_game.Strings.Language;
 import metro_game.game.Game;
+import metro_game.game.physics.Physics;
 import metro_game.render.Renderer;
 
 public class Main {
@@ -11,7 +12,8 @@ public class Main {
 		Strings strings = new Strings(Language.EN);
 		
 		Context context = new Context(width, height, strings);
-		Game game = new Game(context);
+		Physics physics = new Physics(context);
+		Game game = new Game(context, physics);
 		Window window = new Window(context);
 		Renderer renderer = new Renderer(context, game);
 		
@@ -21,16 +23,16 @@ public class Main {
 			double delta = (now - lastFrame) / 1e9;
 			lastFrame = now;
 			
+			context.getInputEvents().flush();
+			context.getGameEvents().flush();
+			game.update(delta);
+			
 			if (game.getScenes().size() == 0) {
 				window.close();
 				break;
 			}
 			
 			renderer.draw();
-			
-			context.getInputEvents().flush();
-			context.getGameEvents().flush();
-			game.update(delta);
 			
 			window.swapBuffers();
 		}

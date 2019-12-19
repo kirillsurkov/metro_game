@@ -1,28 +1,52 @@
 package metro_game.scenes;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import metro_game.Context;
+import metro_game.game.entities.GameEntity;
+import metro_game.game.events.NewBodyEvent;
+import metro_game.game.physics.bodies.Body;
 import metro_game.ui.AlertWidget;
 import metro_game.ui.Widget;
 
 public class Scene {
 	protected Context m_context;
+	private boolean m_ready;
 	private boolean m_needClose;
+	private List<GameEntity> m_gameEntities;
 	private Widget m_rootUI;
 	private AlertWidget m_alert;
 	
 	public Scene(Context context) {
 		m_context = context;
+		m_ready = false;
 		m_needClose = false;
+		m_gameEntities = new ArrayList<GameEntity>();
 		m_rootUI = new Widget(context, 0, 0, context.getWidth(), context.getHeight());
 		m_alert = null;
 	}
 	
-	protected void addChild() {
-		
+	public void init() {
+	}
+	
+	protected <T extends GameEntity> T addGameEntity(T gameEntity) {
+		if (!m_ready) {
+			throw new IllegalStateException("Scene not ready");
+		}
+		m_gameEntities.add(gameEntity);
+		for (Body body : gameEntity.getBodies()) {
+			m_context.getGameEvents().pushEvent(new NewBodyEvent(gameEntity, body));
+		}
+		return gameEntity;
 	}
 	
 	protected <T extends Widget> T addUIChild(T widget) {
 		return m_rootUI.addChild(widget);
+	}
+	
+	public void setReady(boolean ready) {
+		m_ready = ready;
 	}
 	
 	public void setNeedClose(boolean needClose) {
@@ -31,6 +55,10 @@ public class Scene {
 	
 	public boolean isNeedClose() {
 		return m_needClose;
+	}
+	
+	public List<GameEntity> getGameEntities() {
+		return m_gameEntities;
 	}
 	
 	public Widget getRootUI() {
@@ -53,6 +81,9 @@ public class Scene {
 	public void update(double delta) {
 		if (m_alert == null) {
 			m_rootUI.update(delta);
+			for (GameEntity gameEntity : m_gameEntities) {
+				gameEntity.update(delta);
+			}
 		} else {
 			m_alert.update(delta);
 		}

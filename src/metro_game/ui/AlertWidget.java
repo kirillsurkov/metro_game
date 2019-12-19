@@ -11,8 +11,8 @@ public class AlertWidget extends Widget {
 		
 		addPrimitive(new Color(0.0f, 0.0f, 0.0f, 0.5f));
 		addPrimitive(new Rect(0, 0, getWidth(), getHeight()));
-		addPrimitive(new Color(0.75f, 0.0f, 0.0f, 1.0f));
-		addPrimitive(new Rect(0.2f, 0.2f, 0.6f, 0.6f));
+		addPrimitive(new Color(0.75f, 0.0f, 0.0f, 0.9f));
+		addPrimitive(new Rect(0.2f, 0.2f, 0.6f, 0.65f));
 		addPrimitive(new Color(1.0f, 1.0f, 1.0f, 1.0f));
 		addPrimitive(new Text(text, false, 32, 0.5f, 0.3f, Text.AlignmentX.CENTER, Text.AlignmentY.TOP));
 		
