@@ -111,6 +111,8 @@ public class Renderer {
 	}
 	
 	private void drawGameEntities(List<GameEntity> gameEntities) {
+		Camera camera = m_game.getCamera();
+		Vector2f cameraPosition = camera.getPosition();
 		float aspect = m_context.getAspect();
 		float scale = 10;
 		
@@ -118,7 +120,9 @@ public class Renderer {
 		GL11.glLoadIdentity();
 		GL11.glOrtho(-aspect * scale, aspect * scale, scale, -scale, 1, -1);
 		GL11.glMatrixMode(GL11.GL_MODELVIEW);
+		GL11.glLoadIdentity();
 		GL11.glColor4f(1, 0, 0, 1);
+		GL11.glTranslatef(-cameraPosition.x, -cameraPosition.y, 0);
 		for (GameEntity gameEntity : gameEntities) {
 			for (Shape shape : gameEntity.getShapes()) {
 				GL11.glPushMatrix();
@@ -133,6 +137,7 @@ public class Renderer {
 		GL11.glLoadIdentity();
 		GL11.glOrtho(0, 1, 1, 0, 1, -1);
 		GL11.glMatrixMode(GL11.GL_MODELVIEW);
+		GL11.glLoadIdentity();
 		GL11.glColor4f(0, 0, 0, 1);
 		List<Widget> toTravel = new ArrayList<Widget>();
 		toTravel.add(root);
