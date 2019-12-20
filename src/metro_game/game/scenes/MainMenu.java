@@ -1,11 +1,11 @@
-package metro_game.scenes;
+package metro_game.game.scenes;
 
 import metro_game.Context;
 import metro_game.Strings.Language;
 import metro_game.game.events.SwitchSceneEvent;
-import metro_game.ui.AlertWidget;
-import metro_game.ui.ButtonWidget;
 import metro_game.ui.events.BackEvent;
+import metro_game.ui.widgets.AlertWidget;
+import metro_game.ui.widgets.ButtonWidget;
 
 public class MainMenu extends Scene {
 	public MainMenu(Context context) {
@@ -44,7 +44,7 @@ public class MainMenu extends Scene {
 			protected void onClick(boolean up) {
 				super.onClick(up);
 				if (up) {
-					context.getInputEvents().pushEvent(new BackEvent());
+					context.getUIEvents().pushEvent(new BackEvent());
 				}
 			}
 		});

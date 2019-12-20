@@ -1,6 +1,6 @@
 package metro_game.ui.events;
 
-public class InputEvent {
+public class UIEvent {
 	public enum Type {
 		MOUSE_BUTTON,
 		BACK
@@ -8,7 +8,7 @@ public class InputEvent {
 	
 	private Type m_type;
 	
-	public InputEvent(Type type) {
+	public UIEvent(Type type) {
 		m_type = type;
 	}
 	

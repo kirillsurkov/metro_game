@@ -9,7 +9,7 @@ import java.util.Stack;
 import metro_game.Context;
 import metro_game.game.entities.GameEntity;
 import metro_game.game.physics.bodies.Body;
-import metro_game.scenes.Scene;
+import metro_game.game.scenes.Scene;
 
 public class Physics {
 	public class OwnerBodyPair {

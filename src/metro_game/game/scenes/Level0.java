@@ -1,4 +1,4 @@
-package metro_game.scenes;
+package metro_game.game.scenes;
 
 import metro_game.Context;
 import metro_game.game.entities.DummyBoxEntity;

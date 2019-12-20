@@ -5,8 +5,8 @@ import org.joml.Vector2f;
 import metro_game.Context;
 import metro_game.game.events.CameraEvent;
 import metro_game.game.physics.bodies.BoxBody;
-import metro_game.game.shapes.RectShape;
-import metro_game.ui.events.InputEvent;
+import metro_game.render.shapes.RectShape;
+import metro_game.ui.events.UIEvent;
 import metro_game.ui.events.MouseButtonEvent;
 
 public class PlayerEntity extends GameEntity {
@@ -48,9 +48,9 @@ public class PlayerEntity extends GameEntity {
 	public void update(double delta) {
 		float aspect = m_context.getAspect();
 		
-		for (InputEvent inputEvent : m_context.getInputEvents().getEvents()) {
-			if (inputEvent.getType() == InputEvent.Type.MOUSE_BUTTON) {
-				MouseButtonEvent event = (MouseButtonEvent) inputEvent;
+		for (UIEvent uiEvent : m_context.getUIEvents().getEvents()) {
+			if (uiEvent.getType() == UIEvent.Type.MOUSE_BUTTON) {
+				MouseButtonEvent event = (MouseButtonEvent) uiEvent;
 				if (event.isUp()) {
 					Vector2f linearVelocity = new Vector2f((float) Math.cos(m_aimAngle), (float) Math.sin(m_aimAngle)).mul(-m_aimPower * m_aimPowerMax);
 					m_body.getLinearVelocity().set(linearVelocity);

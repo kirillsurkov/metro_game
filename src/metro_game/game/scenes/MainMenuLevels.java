@@ -1,8 +1,8 @@
-package metro_game.scenes;
+package metro_game.game.scenes;
 
 import metro_game.Context;
 import metro_game.game.events.SwitchSceneEvent;
-import metro_game.ui.LevelWidget;
+import metro_game.ui.widgets.LevelWidget;
 
 public class MainMenuLevels extends Scene {
 	public MainMenuLevels(Context context) {

@@ -12,8 +12,8 @@ public class Main {
 		int width = 800;
 		int height = 600;
 		Strings strings = new Strings(Language.EN);
-		
 		Context context = new Context(width, height, strings);
+		
 		Engine engine = new JBox2dEngine();
 		Physics physics = new Physics(context, engine);
 		Game game = new Game(context, physics);
@@ -26,7 +26,7 @@ public class Main {
 			double delta = (now - lastFrame) / 1e9;
 			lastFrame = now;
 			
-			context.getInputEvents().flush();
+			context.getUIEvents().flush();
 			game.update(delta);
 			
 			if (game.getScenes().size() == 0) {

@@ -1,4 +1,4 @@
-package metro_game.game.shapes;
+package metro_game.render.shapes;
 
 import org.joml.Vector2f;
 

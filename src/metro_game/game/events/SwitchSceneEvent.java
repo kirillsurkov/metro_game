@@ -1,6 +1,6 @@
 package metro_game.game.events;
 
-import metro_game.scenes.Scene;
+import metro_game.game.scenes.Scene;
 
 public class SwitchSceneEvent extends GameEvent {
 	private Scene m_scene;

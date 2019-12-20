@@ -9,11 +9,10 @@ import metro_game.game.events.GameEvent;
 import metro_game.game.events.NewBodyEvent;
 import metro_game.game.events.SwitchSceneEvent;
 import metro_game.game.physics.Physics;
-import metro_game.render.Camera;
-import metro_game.scenes.MainMenu;
-import metro_game.scenes.Scene;
-import metro_game.ui.events.InputEvent;
-import metro_game.ui.events.InputEvent.Type;
+import metro_game.game.scenes.MainMenu;
+import metro_game.game.scenes.Scene;
+import metro_game.ui.events.UIEvent;
+import metro_game.ui.events.UIEvent.Type;
 
 public class Game {
 	private Context m_context;
@@ -64,7 +63,7 @@ public class Game {
 			m_newScene = null;
 		}
 		
-		for (InputEvent event : m_context.getInputEvents().getEvents()) {
+		for (UIEvent event : m_context.getUIEvents().getEvents()) {
 			if (event.getType() == Type.BACK) {
 				if (!m_scenes.lastElement().onBack()) {
 					popScene();

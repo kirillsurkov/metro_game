@@ -1,7 +1,7 @@
-package metro_game.scenes;
+package metro_game.game.scenes;
 
 import metro_game.Context;
-import metro_game.ui.AlertWidget;
+import metro_game.ui.widgets.AlertWidget;
 
 public class LevelBase extends Scene {
 	public LevelBase(Context context) {

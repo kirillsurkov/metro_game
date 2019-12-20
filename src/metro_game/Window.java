@@ -22,7 +22,7 @@ public class Window {
 		
 		GLFW.glfwSetKeyCallback(m_window, (wnd, key, scancode, action, mode) -> {
 			if (key == GLFW.GLFW_KEY_ESCAPE && action == GLFW.GLFW_RELEASE) {
-				context.getInputEvents().pushEvent(new BackEvent());
+				context.getUIEvents().pushEvent(new BackEvent());
 			}
 		});
 		
@@ -32,7 +32,7 @@ public class Window {
 		
 		GLFW.glfwSetMouseButtonCallback(m_window, (wnd, button, action, mods) -> {
 			if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT) {
-				context.getInputEvents().pushEvent(new MouseButtonEvent(action == GLFW.GLFW_RELEASE));
+				context.getUIEvents().pushEvent(new MouseButtonEvent(action == GLFW.GLFW_RELEASE));
 			}
 		});
 		

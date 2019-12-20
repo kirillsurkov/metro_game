@@ -1,4 +1,4 @@
-package metro_game.ui;
+package metro_game.ui.widgets;
 
 import metro_game.Context;
 

@@ -6,7 +6,7 @@ import java.util.List;
 import metro_game.Context;
 import metro_game.game.events.NewBodyEvent;
 import metro_game.game.physics.bodies.Body;
-import metro_game.game.shapes.Shape;
+import metro_game.render.shapes.Shape;
 
 public class GameEntity {
 	protected Context m_context;

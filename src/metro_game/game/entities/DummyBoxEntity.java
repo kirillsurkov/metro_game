@@ -1,10 +1,9 @@
 package metro_game.game.entities;
 
 import metro_game.game.physics.bodies.BoxBody;
-
+import metro_game.render.shapes.RectShape;
 import metro_game.Context;
 import metro_game.game.physics.bodies.Body;
-import metro_game.game.shapes.RectShape;
 
 public class DummyBoxEntity extends GameEntity {
 	private boolean m_fragile;

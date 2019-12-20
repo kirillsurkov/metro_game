@@ -7,16 +7,17 @@ import org.joml.Vector2f;
 import org.lwjgl.opengl.*;
 
 import metro_game.Context;
+import metro_game.game.Camera;
 import metro_game.game.Game;
 import metro_game.game.entities.GameEntity;
-import metro_game.game.shapes.RectShape;
-import metro_game.game.shapes.Shape;
-import metro_game.scenes.Scene;
-import metro_game.ui.Widget;
+import metro_game.game.scenes.Scene;
+import metro_game.render.shapes.RectShape;
+import metro_game.render.shapes.Shape;
 import metro_game.ui.primitives.Color;
 import metro_game.ui.primitives.Primitive;
 import metro_game.ui.primitives.Rect;
 import metro_game.ui.primitives.Text;
+import metro_game.ui.widgets.Widget;
 
 public class Renderer {
 	private Context m_context;

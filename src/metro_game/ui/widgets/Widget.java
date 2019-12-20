@@ -1,4 +1,4 @@
-package metro_game.ui;
+package metro_game.ui.widgets;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,7 +6,7 @@ import java.util.Stack;
 
 import metro_game.Context;
 import metro_game.Utils;
-import metro_game.ui.events.InputEvent;
+import metro_game.ui.events.UIEvent;
 import metro_game.ui.events.MouseButtonEvent;
 import metro_game.ui.primitives.Primitive;
 
@@ -72,11 +72,11 @@ public class Widget {
 			onHover(false);
 		}
 		
-		for (InputEvent event : m_context.getInputEvents().getEvents()) {
-			switch (event.getType()) {
+		for (UIEvent uiEvent : m_context.getUIEvents().getEvents()) {
+			switch (uiEvent.getType()) {
 			case MOUSE_BUTTON: {
-				MouseButtonEvent mouseButtonEvent = (MouseButtonEvent) event;
-				boolean up = mouseButtonEvent.isUp();
+				MouseButtonEvent event = (MouseButtonEvent) uiEvent;
+				boolean up = event.isUp();
 				boolean click = m_mouseDown ^ !up;
 				m_mouseDown = !up;
 				if (mouseInside) {

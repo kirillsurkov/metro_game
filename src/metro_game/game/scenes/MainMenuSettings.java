@@ -1,8 +1,8 @@
-package metro_game.scenes;
+package metro_game.game.scenes;
 
 import metro_game.Context;
-import metro_game.ui.ButtonWidget;
 import metro_game.ui.events.BackEvent;
+import metro_game.ui.widgets.ButtonWidget;
 
 public class MainMenuSettings extends Scene {
 	public MainMenuSettings(Context context) {
@@ -12,7 +12,7 @@ public class MainMenuSettings extends Scene {
 			protected void onClick(boolean up) {
 				super.onClick(up);
 				if (up) {
-					context.getInputEvents().pushEvent(new BackEvent());
+					context.getUIEvents().pushEvent(new BackEvent());
 				}
 			}
 		});

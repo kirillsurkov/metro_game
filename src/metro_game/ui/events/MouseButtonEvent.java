@@ -1,6 +1,6 @@
 package metro_game.ui.events;
 
-public class MouseButtonEvent extends InputEvent {
+public class MouseButtonEvent extends UIEvent {
 	private boolean m_up;
 	
 	public MouseButtonEvent(boolean up) {

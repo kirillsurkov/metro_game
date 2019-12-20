@@ -1,4 +1,4 @@
-package metro_game.scenes;
+package metro_game.game.scenes;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -7,8 +7,8 @@ import java.util.Stack;
 import metro_game.Context;
 import metro_game.game.entities.GameEntity;
 import metro_game.game.events.DestroyEntityEvent;
-import metro_game.ui.AlertWidget;
-import metro_game.ui.Widget;
+import metro_game.ui.widgets.AlertWidget;
+import metro_game.ui.widgets.Widget;
 
 public class Scene {
 	protected Context m_context;

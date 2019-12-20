@@ -2,7 +2,7 @@ package metro_game;
 
 import metro_game.Strings.Language;
 import metro_game.game.events.GameEvent;
-import metro_game.ui.events.InputEvent;
+import metro_game.ui.events.UIEvent;
 
 public class Context {
 	private int m_width;
@@ -10,14 +10,14 @@ public class Context {
 	private Strings m_strings;
 	private int m_mouseX;
 	private int m_mouseY;
-	private EventsQueue<InputEvent> m_inputEvents;
+	private EventsQueue<UIEvent> m_uiEvents;
 	private EventsQueue<GameEvent> m_gameEvents;
 	
 	public Context(int width, int height, Strings strings) {
 		m_width = width;
 		m_height = height;
 		m_strings = strings;
-		m_inputEvents = new EventsQueue<InputEvent>();
+		m_uiEvents = new EventsQueue<UIEvent>();
 		m_gameEvents = new EventsQueue<GameEvent>();
 	}
 	
@@ -58,8 +58,8 @@ public class Context {
 		return 1.0f * m_mouseY / getHeight();
 	}
 	
-	public EventsQueue<InputEvent> getInputEvents() {
-		return m_inputEvents;
+	public EventsQueue<UIEvent> getUIEvents() {
+		return m_uiEvents;
 	}
 	
 	public EventsQueue<GameEvent> getGameEvents() {
