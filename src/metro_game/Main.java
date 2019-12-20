@@ -27,7 +27,6 @@ public class Main {
 			lastFrame = now;
 			
 			context.getInputEvents().flush();
-			context.getGameEvents().flush();
 			game.update(delta);
 			
 			if (game.getScenes().size() == 0) {

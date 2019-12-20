@@ -3,10 +3,13 @@ package metro_game.game;
 import java.util.Stack;
 
 import metro_game.Context;
+import metro_game.game.events.CameraEvent;
+import metro_game.game.events.DestroyEntityEvent;
 import metro_game.game.events.GameEvent;
 import metro_game.game.events.NewBodyEvent;
 import metro_game.game.events.SwitchSceneEvent;
 import metro_game.game.physics.Physics;
+import metro_game.render.Camera;
 import metro_game.scenes.MainMenu;
 import metro_game.scenes.Scene;
 import metro_game.ui.events.InputEvent;
@@ -15,13 +18,36 @@ import metro_game.ui.events.InputEvent.Type;
 public class Game {
 	private Context m_context;
 	private Physics m_physics;
+	private Camera m_camera;
 	private Stack<Scene> m_scenes;
 	
 	public Game(Context context, Physics physics) {
 		m_context = context;
 		m_physics = physics;
+		m_camera = new Camera(0.0f, 0.0f);
 		m_scenes = new Stack<Scene>();
 		m_context.getGameEvents().pushEvent(new SwitchSceneEvent(new MainMenu(context)));
+	}
+	
+	private void pushScene(Scene scene) {
+		if (m_scenes.size() > 0) {
+			m_scenes.lastElement().setReady(false);
+		}
+		m_scenes.push(scene);
+		m_physics.switchScene(scene);
+		scene.setReady(true);
+		scene.init();
+	}
+	
+	private void popScene() {
+		m_scenes.pop();
+		if (m_scenes.size() > 0) {
+			m_scenes.lastElement().setReady(true);
+		}
+	}
+	
+	public Camera getCamera() {
+		return m_camera;
 	}
 	
 	public Stack<Scene> getScenes() {
@@ -32,33 +58,8 @@ public class Game {
 		for (InputEvent event : m_context.getInputEvents().getEvents()) {
 			if (event.getType() == Type.BACK) {
 				if (!m_scenes.lastElement().onBack()) {
-					m_scenes.pop();
-					if (m_scenes.size() > 0) {
-						m_scenes.lastElement().setReady(true);
-					}
+					popScene();
 				}
-			}
-		}
-
-		for (GameEvent event : m_context.getGameEvents().getEvents()) {
-			switch (event.getType()) {
-			case SWITCH_SCENE: {
-				SwitchSceneEvent switchSceneEvent = (SwitchSceneEvent) event;
-				Scene scene = switchSceneEvent.getScene();
-				if (m_scenes.size() > 0) {
-					m_scenes.lastElement().setReady(false);
-				}
-				m_scenes.push(scene);
-				m_physics.switchScene(scene);
-				scene.setReady(true);
-				scene.init();
-				break;
-			}
-			case NEW_BODY: {
-				NewBodyEvent newBodyEvent = (NewBodyEvent) event;
-				m_physics.addBody(newBodyEvent.getBody());
-				break;
-			}
 			}
 		}
 		
@@ -69,7 +70,33 @@ public class Game {
 			}
 			scene.update(delta);
 			if (scene.isNeedClose()) {
-				m_scenes.pop();
+				popScene();
+			}
+		}
+		
+		m_context.getGameEvents().flush();
+		for (GameEvent gameEvent : m_context.getGameEvents().getEvents()) {
+			switch (gameEvent.getType()) {
+			case SWITCH_SCENE: {
+				SwitchSceneEvent event = (SwitchSceneEvent) gameEvent;
+				pushScene(event.getScene());
+				break;
+			}
+			case NEW_BODY: {
+				NewBodyEvent event = (NewBodyEvent) gameEvent;
+				m_physics.addBody(event.getOwner(), event.getBody());
+				break;
+			}
+			case CAMERA: {
+				CameraEvent event = (CameraEvent) gameEvent;
+				m_camera.getPosition().set(event.getPosition());
+				break;
+			}
+			case DESTROY_ENTITY: {
+				DestroyEntityEvent event = (DestroyEntityEvent) gameEvent;
+				m_physics.destroyBodies(event.getEntity());
+				break;
+			}
 			}
 		}
 	}

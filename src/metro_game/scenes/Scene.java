@@ -2,11 +2,11 @@ package metro_game.scenes;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 
 import metro_game.Context;
 import metro_game.game.entities.GameEntity;
-import metro_game.game.events.NewBodyEvent;
-import metro_game.game.physics.bodies.Body;
+import metro_game.game.events.DestroyEntityEvent;
 import metro_game.ui.AlertWidget;
 import metro_game.ui.Widget;
 
@@ -37,9 +37,6 @@ public class Scene {
 			throw new IllegalStateException("Scene not ready");
 		}
 		m_gameEntities.add(gameEntity);
-		for (Body body : gameEntity.getBodies()) {
-			m_context.getGameEvents().pushEvent(new NewBodyEvent(body));
-		}
 		return gameEntity;
 	}
 	
@@ -92,9 +89,19 @@ public class Scene {
 		if (m_alert != null) {
 			m_alert.update(delta);
 		}
+		
 		if (!m_paused) {
-			for (GameEntity gameEntity : m_gameEntities) {
+			Stack<Integer> toRemove = new Stack<Integer>();
+			for (int i = 0; i < m_gameEntities.size(); i++) {
+				GameEntity gameEntity = m_gameEntities.get(i);
 				gameEntity.update(delta);
+				if (gameEntity.isNeedRemove()) {
+					m_context.getGameEvents().pushEvent(new DestroyEntityEvent(gameEntity));
+					toRemove.push(i);
+				}
+			}
+			while (toRemove.size() > 0) {
+				m_gameEntities.remove((int) toRemove.pop());
 			}
 			m_rootUI.update(delta);
 		}

@@ -3,7 +3,9 @@ package metro_game.game.events;
 public class GameEvent {
 	public enum Type {
 		SWITCH_SCENE,
-		NEW_BODY
+		NEW_BODY,
+		CAMERA,
+		DESTROY_ENTITY
 	}
 	
 	private Type m_type;

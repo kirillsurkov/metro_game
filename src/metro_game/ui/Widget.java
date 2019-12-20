@@ -56,15 +56,22 @@ public class Widget {
 	}
 	
 	public void update(double delta) {
+		if (m_needRemove) {
+			return;
+		}
+		
 		float mouseX = (float) m_context.getMouseX() / m_context.getWidth();
 		float mouseY = (float) m_context.getMouseY() / m_context.getHeight();
 		boolean mouseInside = Utils.pointInside(mouseX, mouseY, getX(), getY(), m_width, m_height);
+		
 		if (!m_mouseInside && mouseInside) {
 			onHover(true);
 		}
+		
 		if (m_mouseInside && !mouseInside) {
 			onHover(false);
 		}
+		
 		for (InputEvent event : m_context.getInputEvents().getEvents()) {
 			switch (event.getType()) {
 			case MOUSE_BUTTON: {
@@ -85,6 +92,7 @@ public class Widget {
 			}
 			}
 		}
+		
 		m_mouseInside = mouseInside;
 		Stack<Integer> toRemove = new Stack<Integer>();
 		for (int i = 0; i < m_children.size(); i++) {
@@ -94,6 +102,7 @@ public class Widget {
 				toRemove.push(i);
 			}
 		}
+		
 		while (!toRemove.isEmpty()) {
 			m_children.remove((int) toRemove.pop());
 		}
