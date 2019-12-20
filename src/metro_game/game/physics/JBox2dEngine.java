@@ -1,6 +1,8 @@
 package metro_game.game.physics;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
@@ -23,10 +25,12 @@ import metro_game.game.physics.bodies.BoxBody;
 public class JBox2dEngine implements Engine, ContactListener {
 	private World m_world;
 	private Map<Body, OwnerBodyPair> m_bodies;
+	private List<Contact> m_contacts;
 	
 	public JBox2dEngine() {
 		m_world = new World(new Vec2(0, 10));
 		m_bodies = new HashMap<Body, OwnerBodyPair>();
+		m_contacts = new ArrayList<Contact>();
 		m_world.setContactListener(this);
 	}
 	
@@ -85,6 +89,17 @@ public class JBox2dEngine implements Engine, ContactListener {
 	
 	@Override
 	public void update(double delta) {
+		for (Map.Entry<Body, OwnerBodyPair> entry : m_bodies.entrySet()) {
+			metro_game.game.physics.bodies.Body src = entry.getValue().getBody();
+			Body dst = entry.getKey();
+			
+			Vector2f position = src.getPosition();
+			Vector2f linearVelocity = src.getLinearVelocity();
+			
+			dst.setTransform(new Vec2(position.x, position.y), (float) Math.toRadians(src.getRotation()));
+			dst.setLinearVelocity(new Vec2(linearVelocity.x, linearVelocity.y));
+			dst.setAngularVelocity(src.getAngularVelocity());
+		}
 		m_world.step((float) delta, 8, 3);
 		for (Map.Entry<Body, OwnerBodyPair> entry : m_bodies.entrySet()) {
 			Body src = entry.getKey();
@@ -98,14 +113,17 @@ public class JBox2dEngine implements Engine, ContactListener {
 			dst.setRotation((float) Math.toDegrees(src.getAngle()));
 			dst.setAngularVelocity(src.getAngularVelocity());
 		}
+		for (Contact contact : m_contacts) {
+			GameEntity entity1 = m_bodies.get(contact.getFixtureA().getBody()).getOwner();
+			GameEntity entity2 = m_bodies.get(contact.getFixtureB().getBody()).getOwner();
+			entity1.onCollide(entity2);
+			entity2.onCollide(entity1);
+		}
+		m_contacts.clear();
 	}
 
 	@Override
 	public void beginContact(Contact contact) {
-		GameEntity entity1 = m_bodies.get(contact.getFixtureA().getBody()).getOwner();
-		GameEntity entity2 = m_bodies.get(contact.getFixtureB().getBody()).getOwner();
-		entity1.onCollide(entity2);
-		entity2.onCollide(entity1);
 	}
 
 	@Override
@@ -118,5 +136,6 @@ public class JBox2dEngine implements Engine, ContactListener {
 
 	@Override
 	public void postSolve(Contact contact, ContactImpulse impulse) {
+		m_contacts.add(contact);
 	}
 }

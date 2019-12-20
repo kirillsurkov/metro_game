@@ -42,7 +42,9 @@ public class Game {
 	private void popScene() {
 		m_scenes.pop();
 		if (m_scenes.size() > 0) {
-			m_scenes.lastElement().setReady(true);
+			Scene scene = m_scenes.lastElement();
+			m_physics.switchScene(scene);
+			scene.setReady(true);
 		}
 	}
 	
@@ -65,10 +67,10 @@ public class Game {
 		
 		if (m_scenes.size() > 0) {
 			Scene scene = m_scenes.lastElement();
+			scene.update(delta);
 			if (!scene.isPaused()) {
 				m_physics.update(delta);
 			}
-			scene.update(delta);
 			if (scene.isNeedClose()) {
 				popScene();
 			}

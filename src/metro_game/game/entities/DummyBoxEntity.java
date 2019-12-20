@@ -32,6 +32,7 @@ public class DummyBoxEntity extends GameEntity {
 			DummyBoxEntity entity = (DummyBoxEntity) gameEntity;
 			if (entity.isFragile()) {
 				entity.setNeedRemove(true);
+				m_body.getLinearVelocity().set(m_body.getLinearVelocity().add(0, -2.5f));
 			}
 		}
 	}
