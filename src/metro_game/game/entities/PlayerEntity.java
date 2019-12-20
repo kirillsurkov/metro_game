@@ -61,6 +61,7 @@ public class PlayerEntity extends GameEntity {
 					if (m_clickPos == null) {
 						m_aimShape.setVisible(true);
 						m_clickPos = new Vector2f(aspect * m_context.getMouseX(), m_context.getMouseY());
+						m_body.setAngularVelocity(0.0f);
 					}
 				}
 			}
