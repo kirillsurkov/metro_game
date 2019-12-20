@@ -14,6 +14,7 @@ import org.jbox2d.common.Vec2;
 import org.jbox2d.dynamics.Body;
 import org.jbox2d.dynamics.BodyDef;
 import org.jbox2d.dynamics.BodyType;
+import org.jbox2d.dynamics.FixtureDef;
 import org.jbox2d.dynamics.World;
 import org.jbox2d.dynamics.contacts.Contact;
 import org.joml.Vector2f;
@@ -28,7 +29,7 @@ public class JBox2dEngine implements Engine, ContactListener {
 	private List<Contact> m_contacts;
 	
 	public JBox2dEngine() {
-		m_world = new World(new Vec2(0, 10));
+		m_world = new World(new Vec2(0, 0));
 		m_bodies = new HashMap<Body, OwnerBodyPair>();
 		m_contacts = new ArrayList<Contact>();
 		m_world.setContactListener(this);
@@ -48,6 +49,8 @@ public class JBox2dEngine implements Engine, ContactListener {
 	public void addBody(OwnerBodyPair pair) {
 		metro_game.game.physics.bodies.Body body = pair.getBody();
 		BodyDef def = new BodyDef();
+		def.linearDamping = 0.9f;
+		def.angularDamping = 0.9f;
 		def.type = body.isDynamic() ? BodyType.DYNAMIC : BodyType.STATIC;
 		Body newBody = m_world.createBody(def);
 		PolygonShape poly = new PolygonShape();
@@ -60,7 +63,11 @@ public class JBox2dEngine implements Engine, ContactListener {
 		}
 		}
 		
-		newBody.createFixture(poly, 1.0f);
+		FixtureDef fixtureDef = new FixtureDef();
+		fixtureDef.shape = poly;
+		fixtureDef.density = 1.0f;
+		fixtureDef.restitution = 1.0f;
+		newBody.createFixture(fixtureDef);
 		
 		Vector2f position = body.getPosition();
 		Vector2f linearVelocity = body.getLinearVelocity();

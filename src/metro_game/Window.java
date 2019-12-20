@@ -27,7 +27,7 @@ public class Window {
 		});
 		
 		GLFW.glfwSetCursorPosCallback(m_window, (wnd, x, y) -> {
-			context.setMousePos(x, y);
+			context.setMousePos((int) x, (int) y);
 		});
 		
 		GLFW.glfwSetMouseButtonCallback(m_window, (wnd, button, action, mods) -> {

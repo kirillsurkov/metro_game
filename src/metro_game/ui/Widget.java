@@ -60,8 +60,8 @@ public class Widget {
 			return;
 		}
 		
-		float mouseX = (float) m_context.getMouseX() / m_context.getWidth();
-		float mouseY = (float) m_context.getMouseY() / m_context.getHeight();
+		float mouseX = m_context.getMouseX();
+		float mouseY = m_context.getMouseY();
 		boolean mouseInside = Utils.pointInside(mouseX, mouseY, getX(), getY(), m_width, m_height);
 		
 		if (!m_mouseInside && mouseInside) {

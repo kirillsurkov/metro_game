@@ -8,17 +8,27 @@ public class Shape {
 	}
 	
 	private Type m_type;
+	private boolean m_visible;
 	private Vector2f m_position;
 	private float m_rotation;
 	
 	public Shape(Type type, float x, float y, float rotation) {
 		m_type = type;
+		m_visible = true;
 		m_position = new Vector2f(x, y);
 		m_rotation = rotation;
 	}
 	
 	public Type getType() {
 		return m_type;
+	}
+	
+	public boolean isVisible() {
+		return m_visible;
+	}
+	
+	public void setVisible(boolean visible) {
+		m_visible = visible;
 	}
 	
 	public Vector2f getPosition() {

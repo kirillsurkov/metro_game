@@ -20,13 +20,14 @@ public class Game {
 	private Physics m_physics;
 	private Camera m_camera;
 	private Stack<Scene> m_scenes;
+	private Scene m_newScene;
 	
 	public Game(Context context, Physics physics) {
 		m_context = context;
 		m_physics = physics;
 		m_camera = new Camera(0.0f, 0.0f);
 		m_scenes = new Stack<Scene>();
-		m_context.getGameEvents().pushEvent(new SwitchSceneEvent(new MainMenu(context)));
+		m_newScene = new MainMenu(context);
 	}
 	
 	private void pushScene(Scene scene) {
@@ -57,6 +58,12 @@ public class Game {
 	}
 	
 	public void update(double delta) {
+		if (m_newScene != null) {
+			pushScene(m_newScene);
+			m_camera.setPosImmediately(true);
+			m_newScene = null;
+		}
+		
 		for (InputEvent event : m_context.getInputEvents().getEvents()) {
 			if (event.getType() == Type.BACK) {
 				if (!m_scenes.lastElement().onBack()) {
@@ -64,7 +71,7 @@ public class Game {
 				}
 			}
 		}
-		
+
 		if (m_scenes.size() > 0) {
 			Scene scene = m_scenes.lastElement();
 			scene.update(delta);
@@ -81,7 +88,7 @@ public class Game {
 			switch (gameEvent.getType()) {
 			case SWITCH_SCENE: {
 				SwitchSceneEvent event = (SwitchSceneEvent) gameEvent;
-				pushScene(event.getScene());
+				m_newScene = event.getScene();
 				break;
 			}
 			case NEW_BODY: {

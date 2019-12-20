@@ -8,8 +8,8 @@ public class Context {
 	private int m_width;
 	private int m_height;
 	private Strings m_strings;
-	private double m_mouseX;
-	private double m_mouseY;
+	private int m_mouseX;
+	private int m_mouseY;
 	private EventsQueue<InputEvent> m_inputEvents;
 	private EventsQueue<GameEvent> m_gameEvents;
 	
@@ -45,17 +45,17 @@ public class Context {
 		return m_strings.getString(key);
 	}
 	
-	public void setMousePos(double x, double y) {
+	public void setMousePos(int x, int y) {
 		m_mouseX = x;
 		m_mouseY = y;
 	}
 	
-	public double getMouseX() {
-		return m_mouseX;
+	public float getMouseX() {
+		return 1.0f * m_mouseX / getWidth();
 	}
 	
-	public double getMouseY() {
-		return m_mouseY;
+	public float getMouseY() {
+		return 1.0f * m_mouseY / getHeight();
 	}
 	
 	public EventsQueue<InputEvent> getInputEvents() {

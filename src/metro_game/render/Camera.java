@@ -5,6 +5,7 @@ import org.joml.Vector2f;
 public class Camera {
 	private Vector2f m_position;
 	private Vector2f m_newPosition;
+	private boolean m_posImmediately;
 	
 	public Camera(float x, float y) {
 		m_position = new Vector2f(x, y);
@@ -19,7 +20,16 @@ public class Camera {
 		return m_position;
 	}
 	
+	public void setPosImmediately(boolean immediately) {
+		m_posImmediately = immediately;
+	}
+	
 	public void update(double delta) {
-		m_position.add(new Vector2f(m_newPosition).sub(m_position).mul((float) delta * 20));
+		if (m_posImmediately) {
+			m_posImmediately = false;
+			m_position.set(m_newPosition);
+		} else {
+			m_position.add(new Vector2f(m_newPosition).sub(m_position).mul((float) delta * 20));
+		}
 	}
 }

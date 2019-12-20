@@ -125,6 +125,9 @@ public class Renderer {
 		GL11.glTranslatef(-cameraPosition.x, -cameraPosition.y, 0);
 		for (GameEntity gameEntity : gameEntities) {
 			for (Shape shape : gameEntity.getShapes()) {
+				if (!shape.isVisible()) {
+					continue;
+				}
 				GL11.glPushMatrix();
 				drawShape(shape);
 				GL11.glPopMatrix();
