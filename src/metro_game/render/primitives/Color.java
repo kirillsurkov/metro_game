@@ -1,4 +1,4 @@
-package metro_game.ui.primitives;
+package metro_game.render.primitives;
 
 public class Color extends Primitive {
 	private float m_r;

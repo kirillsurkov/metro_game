@@ -1,11 +1,11 @@
 package metro_game.ui.widgets;
 
 import metro_game.Context;
-import metro_game.ui.primitives.Color;
-import metro_game.ui.primitives.Rect;
-import metro_game.ui.primitives.ShaderPrimitive;
-import metro_game.ui.primitives.Text;
-import metro_game.ui.primitives.ShaderPrimitive.ShaderType;
+import metro_game.render.primitives.Color;
+import metro_game.render.primitives.Rect;
+import metro_game.render.primitives.ShaderPrimitive;
+import metro_game.render.primitives.Text;
+import metro_game.render.primitives.ShaderPrimitive.ShaderType;
 
 public class AlertWidget extends Widget {
 	public AlertWidget(Context context, String text, String[] buttons) {
@@ -13,9 +13,9 @@ public class AlertWidget extends Widget {
 		
 		addPrimitive(new ShaderPrimitive(ShaderType.DEFAULT_GAME));
 		addPrimitive(new Color(0.0f, 0.0f, 0.0f, 0.5f));
-		addPrimitive(new Rect(0, 0, getWidth(), getHeight()));
+		addPrimitive(new Rect(0, 0, getWidth(), getHeight(), 0.0f));
 		addPrimitive(new Color(0.75f, 0.0f, 0.0f, 0.9f));
-		addPrimitive(new Rect(0.2f, 0.2f, 0.6f, 0.65f));
+		addPrimitive(new Rect(0.2f, 0.2f, 0.6f, 0.65f, 0.0f));
 		addPrimitive(new ShaderPrimitive(ShaderType.FONT));
 		addPrimitive(new Color(1.0f, 1.0f, 1.0f, 1.0f));
 		addPrimitive(new Text(text, false, 48, 0.5f, 0.3f, Text.AlignmentX.CENTER, Text.AlignmentY.TOP));

@@ -1,4 +1,4 @@
-package metro_game.ui.primitives;
+package metro_game.render.primitives;
 
 public class ShaderPrimitive extends Primitive {
 	public enum ShaderType {

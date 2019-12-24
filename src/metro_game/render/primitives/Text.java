@@ -1,4 +1,4 @@
-package metro_game.ui.primitives;
+package metro_game.render.primitives;
 
 public class Text extends Primitive {
 	public enum AlignmentX {

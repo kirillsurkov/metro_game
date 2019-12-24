@@ -6,9 +6,9 @@ import java.util.Stack;
 
 import metro_game.Context;
 import metro_game.Utils;
+import metro_game.render.primitives.Primitive;
 import metro_game.ui.events.UIEvent;
 import metro_game.ui.events.MouseButtonEvent;
-import metro_game.ui.primitives.Primitive;
 
 public class Widget {
 	private Context m_context;

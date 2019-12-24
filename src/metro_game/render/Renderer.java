@@ -15,17 +15,15 @@ import metro_game.game.Camera;
 import metro_game.game.Game;
 import metro_game.game.entities.GameEntity;
 import metro_game.game.scenes.Scene;
+import metro_game.render.primitives.Color;
+import metro_game.render.primitives.Primitive;
+import metro_game.render.primitives.Rect;
+import metro_game.render.primitives.ShaderPrimitive;
+import metro_game.render.primitives.Text;
+import metro_game.render.primitives.ShaderPrimitive.ShaderType;
 import metro_game.render.shaders.DefaultGameShader;
 import metro_game.render.shaders.FontShader;
 import metro_game.render.shaders.Shader;
-import metro_game.render.shapes.RectShape;
-import metro_game.render.shapes.Shape;
-import metro_game.ui.primitives.Color;
-import metro_game.ui.primitives.Primitive;
-import metro_game.ui.primitives.Rect;
-import metro_game.ui.primitives.ShaderPrimitive;
-import metro_game.ui.primitives.Text;
-import metro_game.ui.primitives.ShaderPrimitive.ShaderType;
 import metro_game.ui.widgets.Widget;
 
 public class Renderer {
@@ -90,28 +88,11 @@ public class Renderer {
 		GL30.glDrawArrays(GL30.GL_QUADS, 0, 4);
 	}
 		
-	private void drawShape(Shape shape, Matrix4f viewProjection) {
-		Vector2f shapePos = shape.getPosition();
-		float shapeRot = shape.getRotation();
-		
-		Matrix4f model = new Matrix4f();
-		model.translate(shapePos.x, shapePos.y, 0.0f);
-		model.rotate((float) Math.toRadians(shapeRot), 0.0f, 0.0f, 1.0f);
-		
-		useShader(getShader(ShaderType.DEFAULT_GAME));
-		
-		switch (shape.getType()) {
-		case RECT: {
-			RectShape rect = (RectShape) shape;
-			Vector2f size = rect.getSize();
-			model.translate(-size.x / 2.0f, -size.y / 2.0f, 0.0f);
-			drawRect(size.x, size.y, new Matrix4f(viewProjection).mul(model));
-			break;
+	private void drawPrimitive(Primitive primitive, Matrix4f viewProjection, boolean center) {
+		if (!primitive.isVisible()) {
+			return;
 		}
-		}
-	}
-	
-	private void drawPrimitive(Primitive primitive, Matrix4f viewProjection) {
+		
 		Matrix4f model = new Matrix4f();
 		switch (primitive.getType()) {
 		case SHADER: {
@@ -126,8 +107,14 @@ public class Renderer {
 		}
 		case RECT: {
 			Rect rect = (Rect) primitive;
-			model.translate(rect.getX(), rect.getY(), 0.0f);
-			drawRect(rect.getWidth(), rect.getHeight(), new Matrix4f(viewProjection).mul(model));
+			Vector2f position = rect.getPosition();
+			Vector2f size = rect.getSize();
+			model.translate(position.x, position.y, 0.0f);
+			model.rotate((float) Math.toRadians(rect.getRotation()), 0.0f, 0.0f, 1.0f);
+			if (center) {
+				model.translate(-size.x / 2.0f, -size.y / 2.0f, 0.0f);
+			}
+			drawRect(size.x, size.y, new Matrix4f(viewProjection).mul(model));
 			break;
 		}
 		case TEXT: {
@@ -173,11 +160,8 @@ public class Renderer {
 		Matrix4f view = new Matrix4f().translate(-cameraPosition.x, -cameraPosition.y, 0.0f);
 		Matrix4f viewProjection = new Matrix4f(projection).mul(view);
 		for (GameEntity gameEntity : gameEntities) {
-			for (Shape shape : gameEntity.getShapes()) {
-				if (!shape.isVisible()) {
-					continue;
-				}
-				drawShape(shape, viewProjection);
+			for (Primitive primitive : gameEntity.getPrimitives()) {
+				drawPrimitive(primitive, viewProjection, true);
 			}
 		}
 	}
@@ -192,7 +176,7 @@ public class Renderer {
 				Matrix4f view = new Matrix4f().translate(widget.getX(), widget.getY(), 0.0f);
 				Matrix4f viewProjection = new Matrix4f(projection).mul(view);
 				for (Primitive primitive : widget.getPrimitives()) {
-					drawPrimitive(primitive, viewProjection);
+					drawPrimitive(primitive, viewProjection, false);
 				}
 				next.addAll(widget.getChildren());
 			}

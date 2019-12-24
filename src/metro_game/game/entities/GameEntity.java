@@ -6,17 +6,17 @@ import java.util.List;
 import metro_game.Context;
 import metro_game.game.events.NewBodyEvent;
 import metro_game.game.physics.bodies.Body;
-import metro_game.render.shapes.Shape;
+import metro_game.render.primitives.Primitive;
 
 public class GameEntity {
 	protected Context m_context;
 	private boolean m_needRemove;
-	private List<Shape> m_shapes;
+	private List<Primitive> m_primitives;
 	
 	public GameEntity(Context context) {
 		m_context = context;
 		m_needRemove = false;
-		m_shapes = new ArrayList<Shape>();
+		m_primitives = new ArrayList<Primitive>();
 	}
 	
 	public void onCollide(GameEntity gameEntity) {
@@ -30,13 +30,13 @@ public class GameEntity {
 		return m_needRemove;
 	}
 	
-	public <T extends Shape> T addShape(T shape) {
-		m_shapes.add(shape);
+	public <T extends Primitive> T addPrimitive(T shape) {
+		m_primitives.add(shape);
 		return shape;
 	}
 	
-	public List<Shape> getShapes() {
-		return m_shapes;
+	public List<Primitive> getPrimitives() {
+		return m_primitives;
 	}
 	
 	public <T extends Body> T addBody(T body) {
