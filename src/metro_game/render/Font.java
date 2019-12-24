@@ -5,7 +5,7 @@ import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL30;
 import org.lwjgl.stb.STBTTFontinfo;
 import org.lwjgl.stb.STBTruetype;
 
@@ -70,6 +70,7 @@ public class Font {
 			System.out.println("Font not found");
 		}
 		
+		
 		m_glyphCache = new HashMap<Integer, GlyphInfo>();
 		
 		m_fontInfo = STBTTFontinfo.create();
@@ -112,12 +113,12 @@ public class Font {
 		int[] yoff = new int[1];
 		ByteBuffer glyph = STBTruetype.stbtt_GetGlyphBitmap(m_fontInfo, m_fontScale, m_fontScale, glyphIndex, w, h, xoff, yoff);
 		
-		int texID = GL11.glGenTextures();
-		GL11.glPixelStorei(GL11.GL_UNPACK_ALIGNMENT, 1);
-		GL11.glBindTexture(GL11.GL_TEXTURE_2D, texID);
-		GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, w[0], h[0], 0, GL11.GL_ALPHA, GL11.GL_UNSIGNED_BYTE, glyph);
-		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
-		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
+		int texID = GL30.glGenTextures();
+		GL30.glPixelStorei(GL30.GL_UNPACK_ALIGNMENT, 1);
+		GL30.glBindTexture(GL30.GL_TEXTURE_2D, texID);
+		GL30.glTexImage2D(GL30.GL_TEXTURE_2D, 0, GL30.GL_RGBA, w[0], h[0], 0, GL30.GL_RED, GL30.GL_UNSIGNED_BYTE, glyph);
+		GL30.glTexParameteri(GL30.GL_TEXTURE_2D, GL30.GL_TEXTURE_MAG_FILTER, GL30.GL_NEAREST);
+		GL30.glTexParameteri(GL30.GL_TEXTURE_2D, GL30.GL_TEXTURE_MIN_FILTER, GL30.GL_NEAREST);
 		
 		GlyphInfo glyphInfo = new GlyphInfo(advanceWidth[0] * m_fontScale, w[0], h[0], xoff[0], yoff[0], texID); 
 		m_glyphCache.put(charCode, glyphInfo);

@@ -12,9 +12,10 @@ public class Level0 extends LevelBase {
 	@Override
 	public void init() {
 		addGameEntity(new PlayerEntity(m_context, 0.0f, -5.0f));
-		addGameEntity(new DummyBoxEntity(m_context, true, false, 2.0f, 0.0f, 5.0f, 1.0f, -5.0f));
-		addGameEntity(new DummyBoxEntity(m_context, true, false, -2.0f, 3.5f, 5.0f, 1.0f, 5.0f));
-		addGameEntity(new DummyBoxEntity(m_context, true, false, 2.0f, 7.0f, 5.0f, 1.0f, -5.0f));
-		addGameEntity(new DummyBoxEntity(m_context, false, false, 0.0f, 10.5f, 5.0f, 1.0f, 0.0f));
+		for (int x = 0; x < 10; x++) {
+			for (int y = 0; y < 10; y++) {
+				addGameEntity(new DummyBoxEntity(m_context, true, true, -10.0f + x * 2.0f, y * 2.0f, 1.0f, 1.0f, (float) Math.random() * 360.0f));
+			}
+		}
 	}
 }

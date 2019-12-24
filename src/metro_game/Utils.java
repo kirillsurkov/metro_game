@@ -57,8 +57,12 @@ public class Utils {
 				}
 			}
 		}
-					
+		
 		buffer.flip();
 		return buffer;
+	}
+	
+	public static byte[] readFile(String path) throws IOException {
+		return Files.readAllBytes(Paths.get(path));
 	}
 }

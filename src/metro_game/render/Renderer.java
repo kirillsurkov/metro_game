@@ -1,12 +1,15 @@
 package metro_game.render;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.lwjgl.opengl.*;
 
 import metro_game.Context;
+import metro_game.Utils;
 import metro_game.game.Camera;
 import metro_game.game.Game;
 import metro_game.game.entities.GameEntity;
@@ -23,6 +26,9 @@ public class Renderer {
 	private Context m_context;
 	private Game m_game;
 	private FontCache m_fontCache;
+	private int m_program;
+	private int m_quadVBO;
+	private int m_quadDefaultShaderVAO;
 
 	public Renderer(Context context, Game game) {
 		m_context = context;
@@ -30,56 +36,97 @@ public class Renderer {
 		m_fontCache = new FontCache(m_context);
 		
 		GL.createCapabilities();
-		GL11.glClearColor(0, 0, 0, 1);
-		GL11.glEnable(GL11.GL_BLEND);
-		GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);  
+		GL30.glClearColor(0, 0, 0, 1);
+		GL30.glEnable(GL30.GL_BLEND);
+		GL30.glBlendFunc(GL30.GL_SRC_ALPHA, GL30.GL_ONE_MINUS_SRC_ALPHA);
+		
+		float[] quadVertices = new float[] {0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f};
+		
+		m_quadVBO = GL30.glGenBuffers();
+		GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, m_quadVBO);
+		GL30.glBufferData(GL30.GL_ARRAY_BUFFER, quadVertices, GL30.GL_STATIC_DRAW);
+		
+		try {
+			int vs = GL30.glCreateShader(GL30.GL_VERTEX_SHADER);
+			GL30.glShaderSource(vs, new String(Utils.readFile("vs.glsl")));
+			GL30.glCompileShader(vs);
+			System.out.println(GL30.glGetShaderInfoLog(vs));
+			int fs = GL30.glCreateShader(GL30.GL_FRAGMENT_SHADER);
+			GL30.glShaderSource(fs, new String(Utils.readFile("fs.glsl")));
+			GL30.glCompileShader(fs);
+			System.out.println(GL30.glGetShaderInfoLog(fs));
+			m_program = GL30.glCreateProgram();
+			GL30.glAttachShader(m_program, vs);
+			GL30.glAttachShader(m_program, fs);
+			GL30.glLinkProgram(m_program);
+			System.out.println(GL30.glGetProgramInfoLog(m_program));
+			
+			GL30.glBindFragDataLocation(m_program, 0, "outColor");
+			
+			m_quadDefaultShaderVAO = GL30.glGenVertexArrays();
+			GL30.glBindVertexArray(m_quadDefaultShaderVAO);
+			
+			int aPosition = GL30.glGetAttribLocation(m_program, "a_position");
+			GL30.glVertexAttribPointer(aPosition, 2, GL30.GL_FLOAT, false, 0, 0);
+			GL30.glEnableVertexAttribArray(aPosition);
+		} catch (IOException e) {
+			System.out.println("Shaders not found");
+		}
 	}
 	
-	private void drawRect(float width, float height) {
-		GL11.glBegin(GL11.GL_QUADS);
-		GL11.glVertex2f(0, 0);
-		GL11.glTexCoord2f(1, 0);
-		GL11.glVertex2f(width, 0);
-		GL11.glTexCoord2f(1, 1);
-		GL11.glVertex2f(width, height);
-		GL11.glTexCoord2f(0, 1);
-		GL11.glVertex2f(0, height);
-		GL11.glTexCoord2f(0, 0);
-		GL11.glEnd();
+	private void drawRect(float width, float height, Matrix4f modelViewProjection) {
+		float[] mvp = new float[16];
+		new Matrix4f(modelViewProjection).scale(width, height, 0.0f).get(mvp);
+		int uMVP = GL30.glGetUniformLocation(m_program, "u_mvp");
+		GL30.glUniformMatrix4fv(uMVP, false, mvp);
+		
+		GL30.glBindVertexArray(m_quadDefaultShaderVAO);
+		GL30.glDrawArrays(GL30.GL_QUADS, 0, 4);
 	}
 		
-	private void drawShape(Shape shape) {
+	private void drawShape(Shape shape, Matrix4f viewProjection) {
+		GL30.glUseProgram(m_program);
+		int uTextured = GL30.glGetUniformLocation(m_program, "u_textured");
+		GL30.glUniform1i(uTextured, 0);
+		
 		Vector2f shapePos = shape.getPosition();
 		float shapeRot = shape.getRotation();
 		
-		GL11.glTranslatef(shapePos.x, shapePos.y, 0);
-		GL11.glRotatef(shapeRot, 0.0f, 0.0f, 1.0f);
+		Matrix4f model = new Matrix4f();
+		model.translate(shapePos.x, shapePos.y, 0.0f);
+		model.rotate((float) Math.toRadians(shapeRot), 0.0f, 0.0f, 1.0f);
 		
 		switch (shape.getType()) {
 		case RECT: {
 			RectShape rect = (RectShape) shape;
 			Vector2f size = rect.getSize();
-			GL11.glTranslatef(-size.x / 2.0f, -size.y / 2.0f, 0.0f);
-			drawRect(size.x, size.y);
+			model.translate(-size.x / 2.0f, -size.y / 2.0f, 0.0f);
+			drawRect(size.x, size.y, new Matrix4f(viewProjection).mul(model));
 			break;
 		}
 		}
 	}
 	
-	private void drawPrimitive(Primitive primitive) {
+	private void drawPrimitive(Primitive primitive, Matrix4f viewProjection) {
+		GL30.glUseProgram(m_program);
+		int uTextured = GL30.glGetUniformLocation(m_program, "u_textured");
+		GL30.glUniform1i(uTextured, 0);
+		Matrix4f model = new Matrix4f();
 		switch (primitive.getType()) {
 		case COLOR: {
 			Color color = (Color) primitive;
-			GL11.glColor4f(color.getR(), color.getG(), color.getB(), color.getA());
+			int uColor = GL30.glGetUniformLocation(m_program, "u_color");
+			GL30.glUniform4f(uColor, color.getR(), color.getG(), color.getB(), color.getA());
 			break;
 		}
 		case RECT: {
 			Rect rect = (Rect) primitive;
-			GL11.glTranslatef(rect.getX(), rect.getY(), 0);
-			drawRect(rect.getWidth(), rect.getHeight());
+			model.translate(rect.getX(), rect.getY(), 0.0f);
+			drawRect(rect.getWidth(), rect.getHeight(), new Matrix4f(viewProjection).mul(model));
 			break;
 		}
 		case TEXT: {
+			GL30.glUniform1i(uTextured, 1);
 			Text text = (Text) primitive;
 			String str = text.getText();
 			if (text.isTranslated()) {
@@ -87,25 +134,25 @@ public class Renderer {
 			}
 			Font font = m_fontCache.getFont("NotoSerif-Regular.ttf", text.getSize());
 			float advance = 0;
-			GL11.glTranslatef(text.getX(), text.getY() + font.getAscent(), 0);
+			model.translate(text.getX(), text.getY() + font.getAscent(), 0.0f);
 			if (text.getAlignmentX() == Text.AlignmentX.CENTER) {
-				GL11.glTranslatef(-font.getStringWidth(str) / 2.0f, 0.0f, 0.0f);
+				model.translate(-font.getStringWidth(str) / 2.0f, 0.0f, 0.0f);
 			}
 			if (text.getAlignmentY() == Text.AlignmentY.CENTER) {
-				GL11.glTranslatef(0, -font.getAscent() / 2.0f, 0);
+				model.translate(0.0f, -font.getAscent() / 2.0f, 0.0f);
 			}
-			GL11.glTexEnvi(GL11.GL_TEXTURE_ENV, GL11.GL_TEXTURE_ENV_MODE, GL11.GL_ADD);
-			GL11.glEnable(GL11.GL_TEXTURE_2D);
+			Matrix4f modelViewProjection = new Matrix4f(viewProjection).mul(model);
+			GL30.glEnable(GL30.GL_TEXTURE_2D);
 			for (int i = 0; i < str.length(); i++) {
-				GL11.glPushMatrix();
 				Font.GlyphInfo glyph = font.renderGlyph(str.charAt(i));
-				GL11.glBindTexture(GL11.GL_TEXTURE_2D, glyph.getTexID());
-				GL11.glTranslatef(advance + glyph.getOffsetX(), glyph.getOffsetY(), 0);
-				drawRect(glyph.getWidth(), glyph.getHeight());
+				int uTexture = GL30.glGetUniformLocation(m_program, "u_texture");
+				GL30.glActiveTexture(GL30.GL_TEXTURE0);
+				GL30.glBindTexture(GL30.GL_TEXTURE_2D, glyph.getTexID());
+				GL30.glUniform1i(uTexture, 0);
+				drawRect(glyph.getWidth(), glyph.getHeight(), new Matrix4f(modelViewProjection).translate(advance + glyph.getOffsetX(), glyph.getOffsetY(), 0.0f));
 				advance += glyph.getAdvanceWidth();
-				GL11.glPopMatrix();
 			}
-			GL11.glDisable(GL11.GL_TEXTURE_2D);
+			GL30.glDisable(GL30.GL_TEXTURE_2D);
 			break;
 		}
 		}
@@ -117,45 +164,31 @@ public class Renderer {
 		float aspect = m_context.getAspect();
 		float scale = 10;
 		
-		GL11.glMatrixMode(GL11.GL_PROJECTION);
-		GL11.glLoadIdentity();
-		GL11.glOrtho(-aspect * scale, aspect * scale, scale, -scale, 1, -1);
-		GL11.glMatrixMode(GL11.GL_MODELVIEW);
-		GL11.glLoadIdentity();
-		GL11.glColor4f(1, 0, 0, 1);
-		GL11.glTranslatef(-cameraPosition.x, -cameraPosition.y, 0);
+		Matrix4f projection = new Matrix4f().ortho(-aspect * scale, aspect * scale, scale, -scale, 1.0f, -1.0f);
+		Matrix4f view = new Matrix4f().translate(-cameraPosition.x, -cameraPosition.y, 0.0f);
+		Matrix4f viewProjection = new Matrix4f(projection).mul(view);
 		for (GameEntity gameEntity : gameEntities) {
 			for (Shape shape : gameEntity.getShapes()) {
 				if (!shape.isVisible()) {
 					continue;
 				}
-				GL11.glPushMatrix();
-				drawShape(shape);
-				GL11.glPopMatrix();
+				drawShape(shape, viewProjection);
 			}
 		}
 	}
 	
 	private void drawUI(Widget root) {
-		GL11.glMatrixMode(GL11.GL_PROJECTION);
-		GL11.glLoadIdentity();
-		GL11.glOrtho(0, 1, 1, 0, 1, -1);
-		GL11.glMatrixMode(GL11.GL_MODELVIEW);
-		GL11.glLoadIdentity();
-		GL11.glColor4f(0, 0, 0, 1);
+		Matrix4f projection = new Matrix4f().ortho(0.0f, 1.0f, 1.0f, 0.0f, -1.0f, 1.0f);
 		List<Widget> toTravel = new ArrayList<Widget>();
 		toTravel.add(root);
 		while (toTravel.size() > 0) {
 			List<Widget> next = new ArrayList<Widget>();
 			for (Widget widget : toTravel) {
-				GL11.glPushMatrix();
-				GL11.glTranslatef(widget.getX(), widget.getY(), 0);
+				Matrix4f view = new Matrix4f().translate(widget.getX(), widget.getY(), 0.0f);
+				Matrix4f viewProjection = new Matrix4f(projection).mul(view);
 				for (Primitive primitive : widget.getPrimitives()) {
-					GL11.glPushMatrix();
-					drawPrimitive(primitive);
-					GL11.glPopMatrix();
+					drawPrimitive(primitive, viewProjection);
 				}
-				GL11.glPopMatrix();
 				next.addAll(widget.getChildren());
 			}
 			toTravel = next;
@@ -168,7 +201,7 @@ public class Renderer {
 			return;
 		}
 		
-		GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
+		GL30.glClear(GL30.GL_COLOR_BUFFER_BIT | GL30.GL_DEPTH_BUFFER_BIT);
 		
 		drawGameEntities(scene.getGameEntities());
 		drawUI(scene.getRootUI());
