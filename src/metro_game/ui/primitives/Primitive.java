@@ -2,6 +2,7 @@ package metro_game.ui.primitives;
 
 public class Primitive {
 	public enum Type {
+		SHADER,
 		COLOR,
 		RECT,
 		TEXT

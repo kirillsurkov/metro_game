@@ -61,15 +61,9 @@ public class Font {
 	private float m_fontAscent;
 	private Map<Integer, GlyphInfo> m_glyphCache;
 	
-	public Font(Context context, String path, int size) {
+	public Font(Context context, String path, int size) throws IOException {
 		m_context = context;
-		ByteBuffer ttf = null;
-		try {
-			ttf = Utils.ioResourceToByteBuffer(path, 512 * 1024);
-		} catch (IOException e) {
-			System.out.println("Font not found");
-		}
-		
+		ByteBuffer ttf = Utils.readFile("res/fonts/" + path);
 		
 		m_glyphCache = new HashMap<Integer, GlyphInfo>();
 		

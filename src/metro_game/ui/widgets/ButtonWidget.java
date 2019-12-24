@@ -3,6 +3,8 @@ package metro_game.ui.widgets;
 import metro_game.Context;
 import metro_game.ui.primitives.Color;
 import metro_game.ui.primitives.Rect;
+import metro_game.ui.primitives.ShaderPrimitive;
+import metro_game.ui.primitives.ShaderPrimitive.ShaderType;
 import metro_game.ui.primitives.Text;
 import metro_game.ui.primitives.Text.AlignmentX;
 import metro_game.ui.primitives.Text.AlignmentY;
@@ -13,8 +15,10 @@ public class ButtonWidget extends Widget {
 	public ButtonWidget(Context context, String text, float x, float y, float width, float height) {
 		super(context, x, y, width, height);
 		m_color = new Color(1.0f, 0.0f, 0.0f, 1.0f);
+		addPrimitive(new ShaderPrimitive(ShaderType.DEFAULT_GAME));
 		addPrimitive(m_color);
 		addPrimitive(new Rect(0, 0, width, height));
+		addPrimitive(new ShaderPrimitive(ShaderType.FONT));
 		addPrimitive(new Color(1.0f, 1.0f, 1.0f, 1.0f));
 		addPrimitive(new Text(text, true, 56, width / 2.0f, 0, AlignmentX.CENTER, AlignmentY.TOP));
 	}

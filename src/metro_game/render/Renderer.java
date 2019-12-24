@@ -2,38 +2,45 @@ package metro_game.render;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.lwjgl.opengl.*;
 
 import metro_game.Context;
-import metro_game.Utils;
 import metro_game.game.Camera;
 import metro_game.game.Game;
 import metro_game.game.entities.GameEntity;
 import metro_game.game.scenes.Scene;
+import metro_game.render.shaders.DefaultGameShader;
+import metro_game.render.shaders.FontShader;
+import metro_game.render.shaders.Shader;
 import metro_game.render.shapes.RectShape;
 import metro_game.render.shapes.Shape;
 import metro_game.ui.primitives.Color;
 import metro_game.ui.primitives.Primitive;
 import metro_game.ui.primitives.Rect;
+import metro_game.ui.primitives.ShaderPrimitive;
 import metro_game.ui.primitives.Text;
+import metro_game.ui.primitives.ShaderPrimitive.ShaderType;
 import metro_game.ui.widgets.Widget;
 
 public class Renderer {
 	private Context m_context;
 	private Game m_game;
 	private FontCache m_fontCache;
-	private int m_program;
+	private Map<ShaderType, Shader> m_shaderCache;
+	private Shader m_currentShader;
 	private int m_quadVBO;
-	private int m_quadDefaultShaderVAO;
 
 	public Renderer(Context context, Game game) {
 		m_context = context;
 		m_game = game;
 		m_fontCache = new FontCache(m_context);
+		m_shaderCache = new HashMap<ShaderType, Shader>();
 		
 		GL.createCapabilities();
 		GL30.glClearColor(0, 0, 0, 1);
@@ -46,55 +53,52 @@ public class Renderer {
 		GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, m_quadVBO);
 		GL30.glBufferData(GL30.GL_ARRAY_BUFFER, quadVertices, GL30.GL_STATIC_DRAW);
 		
-		try {
-			int vs = GL30.glCreateShader(GL30.GL_VERTEX_SHADER);
-			GL30.glShaderSource(vs, new String(Utils.readFile("vs.glsl")));
-			GL30.glCompileShader(vs);
-			System.out.println(GL30.glGetShaderInfoLog(vs));
-			int fs = GL30.glCreateShader(GL30.GL_FRAGMENT_SHADER);
-			GL30.glShaderSource(fs, new String(Utils.readFile("fs.glsl")));
-			GL30.glCompileShader(fs);
-			System.out.println(GL30.glGetShaderInfoLog(fs));
-			m_program = GL30.glCreateProgram();
-			GL30.glAttachShader(m_program, vs);
-			GL30.glAttachShader(m_program, fs);
-			GL30.glLinkProgram(m_program);
-			System.out.println(GL30.glGetProgramInfoLog(m_program));
-			
-			GL30.glBindFragDataLocation(m_program, 0, "outColor");
-			
-			m_quadDefaultShaderVAO = GL30.glGenVertexArrays();
-			GL30.glBindVertexArray(m_quadDefaultShaderVAO);
-			
-			int aPosition = GL30.glGetAttribLocation(m_program, "a_position");
-			GL30.glVertexAttribPointer(aPosition, 2, GL30.GL_FLOAT, false, 0, 0);
-			GL30.glEnableVertexAttribArray(aPosition);
-		} catch (IOException e) {
-			System.out.println("Shaders not found");
+		m_currentShader = null;
+	}
+	
+	private void useShader(Shader shader) {
+		if (m_currentShader != shader) {
+			m_currentShader = shader;
+			m_currentShader.use();
 		}
 	}
 	
+	private Shader getShader(ShaderType shaderType) {
+		try {
+			switch (shaderType) {
+			case DEFAULT_GAME: {
+				if (!m_shaderCache.containsKey(shaderType)) {
+					m_shaderCache.put(shaderType, new DefaultGameShader());
+				}
+				return m_shaderCache.get(shaderType);
+			}
+			case FONT: {
+				if (!m_shaderCache.containsKey(shaderType)) {
+					m_shaderCache.put(shaderType, new FontShader());
+				}
+				return m_shaderCache.get(shaderType);
+			}
+			}
+		} catch (IOException e) {
+			System.out.println("Shader " + shaderType + " not found");
+		}
+		return null;
+	}
+	
 	private void drawRect(float width, float height, Matrix4f modelViewProjection) {
-		float[] mvp = new float[16];
-		new Matrix4f(modelViewProjection).scale(width, height, 0.0f).get(mvp);
-		int uMVP = GL30.glGetUniformLocation(m_program, "u_mvp");
-		GL30.glUniformMatrix4fv(uMVP, false, mvp);
-		
-		GL30.glBindVertexArray(m_quadDefaultShaderVAO);
+		m_currentShader.setMVP(new Matrix4f(modelViewProjection).scale(width, height, 0.0f));
 		GL30.glDrawArrays(GL30.GL_QUADS, 0, 4);
 	}
 		
 	private void drawShape(Shape shape, Matrix4f viewProjection) {
-		GL30.glUseProgram(m_program);
-		int uTextured = GL30.glGetUniformLocation(m_program, "u_textured");
-		GL30.glUniform1i(uTextured, 0);
-		
 		Vector2f shapePos = shape.getPosition();
 		float shapeRot = shape.getRotation();
 		
 		Matrix4f model = new Matrix4f();
 		model.translate(shapePos.x, shapePos.y, 0.0f);
 		model.rotate((float) Math.toRadians(shapeRot), 0.0f, 0.0f, 1.0f);
+		
+		useShader(getShader(ShaderType.DEFAULT_GAME));
 		
 		switch (shape.getType()) {
 		case RECT: {
@@ -108,15 +112,16 @@ public class Renderer {
 	}
 	
 	private void drawPrimitive(Primitive primitive, Matrix4f viewProjection) {
-		GL30.glUseProgram(m_program);
-		int uTextured = GL30.glGetUniformLocation(m_program, "u_textured");
-		GL30.glUniform1i(uTextured, 0);
 		Matrix4f model = new Matrix4f();
 		switch (primitive.getType()) {
+		case SHADER: {
+			ShaderPrimitive shaderPrimitive = (ShaderPrimitive) primitive;
+			useShader(getShader(shaderPrimitive.getShaderType()));
+			break;
+		}
 		case COLOR: {
 			Color color = (Color) primitive;
-			int uColor = GL30.glGetUniformLocation(m_program, "u_color");
-			GL30.glUniform4f(uColor, color.getR(), color.getG(), color.getB(), color.getA());
+			m_currentShader.setColor(color.getR(), color.getG(), color.getB(), color.getA());
 			break;
 		}
 		case RECT: {
@@ -126,13 +131,12 @@ public class Renderer {
 			break;
 		}
 		case TEXT: {
-			GL30.glUniform1i(uTextured, 1);
 			Text text = (Text) primitive;
 			String str = text.getText();
 			if (text.isTranslated()) {
 				str = m_context.getString(str);
 			}
-			Font font = m_fontCache.getFont("NotoSerif-Regular.ttf", text.getSize());
+			Font font = m_fontCache.getFont(text.getFont(), text.getSize());
 			float advance = 0;
 			model.translate(text.getX(), text.getY() + font.getAscent(), 0.0f);
 			if (text.getAlignmentX() == Text.AlignmentX.CENTER) {
@@ -145,10 +149,11 @@ public class Renderer {
 			GL30.glEnable(GL30.GL_TEXTURE_2D);
 			for (int i = 0; i < str.length(); i++) {
 				Font.GlyphInfo glyph = font.renderGlyph(str.charAt(i));
-				int uTexture = GL30.glGetUniformLocation(m_program, "u_texture");
-				GL30.glActiveTexture(GL30.GL_TEXTURE0);
-				GL30.glBindTexture(GL30.GL_TEXTURE_2D, glyph.getTexID());
-				GL30.glUniform1i(uTexture, 0);
+				if (!(m_currentShader instanceof FontShader)) {
+					System.out.println("Wrong shader bound for text");
+					return;
+				}
+				((FontShader) m_currentShader).setTexture(glyph.getTexID());
 				drawRect(glyph.getWidth(), glyph.getHeight(), new Matrix4f(modelViewProjection).translate(advance + glyph.getOffsetX(), glyph.getOffsetY(), 0.0f));
 				advance += glyph.getAdvanceWidth();
 			}

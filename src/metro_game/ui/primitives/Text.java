@@ -11,6 +11,7 @@ public class Text extends Primitive {
 		CENTER
 	}
 	
+	private String m_font;
 	private String m_text;
 	private boolean m_translated;
 	private int m_size;
@@ -21,6 +22,7 @@ public class Text extends Primitive {
 	
 	public Text(String text, boolean translated, int size, float x, float y, AlignmentX alignmentX, AlignmentY alignmentY) {
 		super(Type.TEXT);
+		m_font = "NotoSerif-Regular.ttf";
 		m_text = text;
 		m_translated = translated;
 		m_size = size;
@@ -28,6 +30,10 @@ public class Text extends Primitive {
 		m_y = y;
 		m_alignmentX = alignmentX;
 		m_alignmentY = alignmentY;
+	}
+	
+	public String getFont() {
+		return m_font;
 	}
 	
 	public String getText() {

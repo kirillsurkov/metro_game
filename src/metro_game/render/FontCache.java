@@ -1,5 +1,6 @@
 package metro_game.render;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -26,7 +27,12 @@ public class FontCache {
 		if (sizeCache.containsKey(size)) {
 			cachedFont = sizeCache.get(size);
 		} else {
-			cachedFont = new Font(m_context, name, size);
+			try {
+				cachedFont = new Font(m_context, name, size);
+			} catch (IOException e) {
+				System.out.println("Font " + name + " not found");
+				return null;
+			}
 			sizeCache.put(size, cachedFont);
 		}
 		return cachedFont;
