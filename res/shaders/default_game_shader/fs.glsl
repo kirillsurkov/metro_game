@@ -1,10 +1,10 @@
 #version 130
 
+precision highp float;
+
 uniform vec4 u_color;
 
-in highp vec2 v_texCoords;
-
-out highp vec4 outColor;
+out vec4 outColor;
 
 void main() {
 	outColor = u_color;

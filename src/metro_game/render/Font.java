@@ -59,6 +59,7 @@ public class Font {
 	private STBTTFontinfo m_fontInfo;
 	private float m_fontScale;
 	private float m_fontAscent;
+	private float m_fontDescent;
 	private Map<Integer, GlyphInfo> m_glyphCache;
 	
 	public Font(Context context, String path, int size) throws IOException {
@@ -80,6 +81,7 @@ public class Font {
 		STBTruetype.stbtt_GetFontVMetrics(m_fontInfo, ascent, descent, lineGap);
 		
 		m_fontAscent = ascent[0] * m_fontScale;
+		m_fontDescent = descent[0] * m_fontScale;
 	}
 	
 	public float getStringWidth(String str) {
@@ -111,8 +113,10 @@ public class Font {
 		GL30.glPixelStorei(GL30.GL_UNPACK_ALIGNMENT, 1);
 		GL30.glBindTexture(GL30.GL_TEXTURE_2D, texID);
 		GL30.glTexImage2D(GL30.GL_TEXTURE_2D, 0, GL30.GL_RGBA, w[0], h[0], 0, GL30.GL_RED, GL30.GL_UNSIGNED_BYTE, glyph);
-		GL30.glTexParameteri(GL30.GL_TEXTURE_2D, GL30.GL_TEXTURE_MAG_FILTER, GL30.GL_NEAREST);
-		GL30.glTexParameteri(GL30.GL_TEXTURE_2D, GL30.GL_TEXTURE_MIN_FILTER, GL30.GL_NEAREST);
+		GL30.glTexParameteri(GL30.GL_TEXTURE_2D, GL30.GL_TEXTURE_MAG_FILTER, GL30.GL_LINEAR);
+		GL30.glTexParameteri(GL30.GL_TEXTURE_2D, GL30.GL_TEXTURE_MIN_FILTER, GL30.GL_LINEAR);
+		GL30.glTexParameteri(GL30.GL_TEXTURE_2D, GL30.GL_TEXTURE_WRAP_S, GL30.GL_CLAMP_TO_EDGE);
+		GL30.glTexParameteri(GL30.GL_TEXTURE_2D, GL30.GL_TEXTURE_WRAP_T, GL30.GL_CLAMP_TO_EDGE);
 		
 		GlyphInfo glyphInfo = new GlyphInfo(advanceWidth[0] * m_fontScale, w[0], h[0], xoff[0], yoff[0], texID); 
 		m_glyphCache.put(charCode, glyphInfo);
@@ -121,5 +125,9 @@ public class Font {
 	
 	public float getAscent() {
 		return m_fontAscent / m_context.getHeight();
+	}
+	
+	public float getDescent() {
+		return m_fontDescent / m_context.getHeight();
 	}
 }

@@ -17,6 +17,7 @@ public class Window {
 		
 		GLFW.glfwDefaultWindowHints();
 		GLFW.glfwWindowHint(GLFW.GLFW_VISIBLE, GLFW.GLFW_FALSE);
+		GLFW.glfwWindowHint(GLFW.GLFW_SAMPLES, 8);
 		
 		m_window = GLFW.glfwCreateWindow(context.getWidth(), context.getHeight(), "Game", 0, 0);
 		

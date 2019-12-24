@@ -42,6 +42,7 @@ public class Renderer {
 		
 		GL.createCapabilities();
 		GL30.glClearColor(0, 0, 0, 1);
+		GL30.glEnable(GL30.GL_MULTISAMPLE);
 		GL30.glEnable(GL30.GL_BLEND);
 		GL30.glBlendFunc(GL30.GL_SRC_ALPHA, GL30.GL_ONE_MINUS_SRC_ALPHA);
 		
@@ -88,7 +89,7 @@ public class Renderer {
 		GL30.glDrawArrays(GL30.GL_QUADS, 0, 4);
 	}
 		
-	private void drawPrimitive(Primitive primitive, Matrix4f viewProjection, boolean center) {
+	private void drawPrimitive(Primitive primitive, Matrix4f viewProjection, float viewWidth, float viewHeight, boolean center) {
 		if (!primitive.isVisible()) {
 			return;
 		}
@@ -123,14 +124,18 @@ public class Renderer {
 			if (text.isTranslated()) {
 				str = m_context.getString(str);
 			}
-			Font font = m_fontCache.getFont(text.getFont(), text.getSize());
 			float advance = 0;
-			model.translate(text.getX(), text.getY() + font.getAscent(), 0.0f);
+			Vector2f position = text.getPosition();
+			Font font = m_fontCache.getFont(text.getFont(), text.getFontSize());
+			model.translate(position.x, position.y, 0.0f);
+			model.rotate((float) Math.toRadians(text.getRotation()), 0.0f, 0.0f, 1.0f);
+			model.scale(viewWidth, viewHeight, 1.0f);
+			model.translate(0.0f, font.getAscent(), 0.0f);
 			if (text.getAlignmentX() == TextPrimitive.AlignmentX.CENTER) {
 				model.translate(-font.getStringWidth(str) / 2.0f, 0.0f, 0.0f);
 			}
 			if (text.getAlignmentY() == TextPrimitive.AlignmentY.CENTER) {
-				model.translate(0.0f, -font.getAscent() / 2.0f, 0.0f);
+				model.translate(0.0f, (font.getDescent() - font.getAscent()) / 2.0f, 0.0f);
 			}
 			Matrix4f modelViewProjection = new Matrix4f(viewProjection).mul(model);
 			GL30.glEnable(GL30.GL_TEXTURE_2D);
@@ -141,7 +146,9 @@ public class Renderer {
 					return;
 				}
 				((FontShader) m_currentShader).setTexture(glyph.getTexID());
-				drawRect(glyph.getWidth(), glyph.getHeight(), new Matrix4f(modelViewProjection).translate(advance + glyph.getOffsetX(), glyph.getOffsetY(), 0.0f));
+				Matrix4f mvp = new Matrix4f(modelViewProjection);
+				mvp.translate(advance + glyph.getOffsetX(), glyph.getOffsetY(), 0.0f);
+				drawRect(glyph.getWidth(), glyph.getHeight(), mvp);
 				advance += glyph.getAdvanceWidth();
 			}
 			GL30.glDisable(GL30.GL_TEXTURE_2D);
@@ -156,18 +163,24 @@ public class Renderer {
 		float aspect = m_context.getAspect();
 		float scale = 10;
 		
-		Matrix4f projection = new Matrix4f().ortho(-aspect * scale, aspect * scale, scale, -scale, 1.0f, -1.0f);
+		float width = aspect * scale * 2.0f;
+		float height = scale * 2.0f;
+		
+		Matrix4f projection = new Matrix4f().ortho(-width / 2.0f, width / 2.0f, height / 2.0f, -height / 2.0f, 1.0f, -1.0f);
 		Matrix4f view = new Matrix4f().translate(-cameraPosition.x, -cameraPosition.y, 0.0f);
 		Matrix4f viewProjection = new Matrix4f(projection).mul(view);
 		for (GameEntity gameEntity : gameEntities) {
 			for (Primitive primitive : gameEntity.getPrimitives()) {
-				drawPrimitive(primitive, viewProjection, true);
+				drawPrimitive(primitive, viewProjection, width, height, true);
 			}
 		}
 	}
 	
 	private void drawUI(Widget root) {
-		Matrix4f projection = new Matrix4f().ortho(0.0f, 1.0f, 1.0f, 0.0f, -1.0f, 1.0f);
+		float width = 1.0f;
+		float height = 1.0f;
+		
+		Matrix4f projection = new Matrix4f().ortho(0.0f, width, height, 0.0f, -1.0f, 1.0f);
 		List<Widget> toTravel = new ArrayList<Widget>();
 		toTravel.add(root);
 		while (toTravel.size() > 0) {
@@ -176,7 +189,7 @@ public class Renderer {
 				Matrix4f view = new Matrix4f().translate(widget.getX(), widget.getY(), 0.0f);
 				Matrix4f viewProjection = new Matrix4f(projection).mul(view);
 				for (Primitive primitive : widget.getPrimitives()) {
-					drawPrimitive(primitive, viewProjection, false);
+					drawPrimitive(primitive, viewProjection, width, height, false);
 				}
 				next.addAll(widget.getChildren());
 			}
