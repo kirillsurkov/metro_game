@@ -1,6 +1,6 @@
 package metro_game.render.primitives;
 
-public class Text extends Primitive {
+public class TextPrimitive extends Primitive {
 	public enum AlignmentX {
 		LEFT,
 		CENTER
@@ -20,7 +20,7 @@ public class Text extends Primitive {
 	private AlignmentX m_alignmentX;
 	private AlignmentY m_alignmentY;
 	
-	public Text(String text, boolean translated, int size, float x, float y, AlignmentX alignmentX, AlignmentY alignmentY) {
+	public TextPrimitive(String text, boolean translated, int size, float x, float y, AlignmentX alignmentX, AlignmentY alignmentY) {
 		super(Type.TEXT);
 		m_font = "NotoSerif-Regular.ttf";
 		m_text = text;

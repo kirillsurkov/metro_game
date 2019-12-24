@@ -1,12 +1,12 @@
 package metro_game.render.primitives;
 
-public class Color extends Primitive {
+public class ColorPrimitive extends Primitive {
 	private float m_r;
 	private float m_g;
 	private float m_b;
 	private float m_a;
 	
-	public Color(float r, float g, float b, float a) {
+	public ColorPrimitive(float r, float g, float b, float a) {
 		super(Type.COLOR);
 		set(r, g, b, a);
 	}

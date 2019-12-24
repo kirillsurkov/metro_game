@@ -15,11 +15,11 @@ import metro_game.game.Camera;
 import metro_game.game.Game;
 import metro_game.game.entities.GameEntity;
 import metro_game.game.scenes.Scene;
-import metro_game.render.primitives.Color;
+import metro_game.render.primitives.ColorPrimitive;
 import metro_game.render.primitives.Primitive;
-import metro_game.render.primitives.Rect;
+import metro_game.render.primitives.RectPrimitive;
 import metro_game.render.primitives.ShaderPrimitive;
-import metro_game.render.primitives.Text;
+import metro_game.render.primitives.TextPrimitive;
 import metro_game.render.primitives.ShaderPrimitive.ShaderType;
 import metro_game.render.shaders.DefaultGameShader;
 import metro_game.render.shaders.FontShader;
@@ -96,17 +96,17 @@ public class Renderer {
 		Matrix4f model = new Matrix4f();
 		switch (primitive.getType()) {
 		case SHADER: {
-			ShaderPrimitive shaderPrimitive = (ShaderPrimitive) primitive;
-			useShader(getShader(shaderPrimitive.getShaderType()));
+			ShaderPrimitive shader = (ShaderPrimitive) primitive;
+			useShader(getShader(shader.getShaderType()));
 			break;
 		}
 		case COLOR: {
-			Color color = (Color) primitive;
+			ColorPrimitive color = (ColorPrimitive) primitive;
 			m_currentShader.setColor(color.getR(), color.getG(), color.getB(), color.getA());
 			break;
 		}
 		case RECT: {
-			Rect rect = (Rect) primitive;
+			RectPrimitive rect = (RectPrimitive) primitive;
 			Vector2f position = rect.getPosition();
 			Vector2f size = rect.getSize();
 			model.translate(position.x, position.y, 0.0f);
@@ -118,7 +118,7 @@ public class Renderer {
 			break;
 		}
 		case TEXT: {
-			Text text = (Text) primitive;
+			TextPrimitive text = (TextPrimitive) primitive;
 			String str = text.getText();
 			if (text.isTranslated()) {
 				str = m_context.getString(str);
@@ -126,10 +126,10 @@ public class Renderer {
 			Font font = m_fontCache.getFont(text.getFont(), text.getSize());
 			float advance = 0;
 			model.translate(text.getX(), text.getY() + font.getAscent(), 0.0f);
-			if (text.getAlignmentX() == Text.AlignmentX.CENTER) {
+			if (text.getAlignmentX() == TextPrimitive.AlignmentX.CENTER) {
 				model.translate(-font.getStringWidth(str) / 2.0f, 0.0f, 0.0f);
 			}
-			if (text.getAlignmentY() == Text.AlignmentY.CENTER) {
+			if (text.getAlignmentY() == TextPrimitive.AlignmentY.CENTER) {
 				model.translate(0.0f, -font.getAscent() / 2.0f, 0.0f);
 			}
 			Matrix4f modelViewProjection = new Matrix4f(viewProjection).mul(model);

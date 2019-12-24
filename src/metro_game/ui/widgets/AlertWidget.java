@@ -1,10 +1,10 @@
 package metro_game.ui.widgets;
 
 import metro_game.Context;
-import metro_game.render.primitives.Color;
-import metro_game.render.primitives.Rect;
+import metro_game.render.primitives.ColorPrimitive;
+import metro_game.render.primitives.RectPrimitive;
 import metro_game.render.primitives.ShaderPrimitive;
-import metro_game.render.primitives.Text;
+import metro_game.render.primitives.TextPrimitive;
 import metro_game.render.primitives.ShaderPrimitive.ShaderType;
 
 public class AlertWidget extends Widget {
@@ -12,13 +12,13 @@ public class AlertWidget extends Widget {
 		super(context, 0, 0, 1, 1);
 		
 		addPrimitive(new ShaderPrimitive(ShaderType.DEFAULT_GAME));
-		addPrimitive(new Color(0.0f, 0.0f, 0.0f, 0.5f));
-		addPrimitive(new Rect(0, 0, getWidth(), getHeight(), 0.0f));
-		addPrimitive(new Color(0.75f, 0.0f, 0.0f, 0.9f));
-		addPrimitive(new Rect(0.2f, 0.2f, 0.6f, 0.65f, 0.0f));
+		addPrimitive(new ColorPrimitive(0.0f, 0.0f, 0.0f, 0.5f));
+		addPrimitive(new RectPrimitive(0, 0, getWidth(), getHeight(), 0.0f));
+		addPrimitive(new ColorPrimitive(0.75f, 0.0f, 0.0f, 0.9f));
+		addPrimitive(new RectPrimitive(0.2f, 0.2f, 0.6f, 0.65f, 0.0f));
 		addPrimitive(new ShaderPrimitive(ShaderType.FONT));
-		addPrimitive(new Color(1.0f, 1.0f, 1.0f, 1.0f));
-		addPrimitive(new Text(text, false, 48, 0.5f, 0.3f, Text.AlignmentX.CENTER, Text.AlignmentY.TOP));
+		addPrimitive(new ColorPrimitive(1.0f, 1.0f, 1.0f, 1.0f));
+		addPrimitive(new TextPrimitive(text, false, 48, 0.5f, 0.3f, TextPrimitive.AlignmentX.CENTER, TextPrimitive.AlignmentY.TOP));
 		
 		float buttonGap = 0.05f;
 		float buttonWidth = 0.45f / buttons.length - buttonGap;
