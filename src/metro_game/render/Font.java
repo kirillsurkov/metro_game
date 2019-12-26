@@ -62,7 +62,7 @@ public class Font {
 	private float m_fontDescent;
 	private Map<Integer, GlyphInfo> m_glyphCache;
 	
-	public static int sdfPadding = 5;
+	public static int sdfPadding = 8;
 	public static int sdfOnEdge = 180;
 	
 	public Font(Context context, String path, int size) throws IOException {
