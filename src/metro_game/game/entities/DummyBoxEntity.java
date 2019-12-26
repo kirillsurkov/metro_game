@@ -24,7 +24,7 @@ public class DummyBoxEntity extends GameEntity {
 		
 		addPrimitive(new ShaderPrimitive(ShaderType.FONT));
 		addPrimitive(new ColorPrimitive(1.0f, 0.0f, 0.0f, 1.0f));
-		m_text = addPrimitive(new TextPrimitive("TEST", false, true, 48, x, y, 0.0f, TextPrimitive.AlignmentX.CENTER, TextPrimitive.AlignmentY.CENTER));
+		m_text = addPrimitive(new TextPrimitive("TEST", false, 48, 0.0f, x, y, 0.0f, TextPrimitive.AlignmentX.CENTER, TextPrimitive.AlignmentY.CENTER));
 		
 		m_body = addBody(new BoxBody(dynamic, x, y, width, height));
 		m_body.setRotation(rotation);

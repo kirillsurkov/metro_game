@@ -62,6 +62,9 @@ public class Font {
 	private float m_fontDescent;
 	private Map<Integer, GlyphInfo> m_glyphCache;
 	
+	public static int sdfPadding = 5;
+	public static int sdfOnEdge = 180;
+	
 	public Font(Context context, String path, int size) throws IOException {
 		m_context = context;
 		ByteBuffer ttf = Utils.readFile("res/fonts/" + path);
@@ -100,19 +103,19 @@ public class Font {
 		int[] advanceWidth = new int[1];
 		int[] leftSideBearing = new int[1];
 		STBTruetype.stbtt_GetCodepointHMetrics(m_fontInfo, charCode, advanceWidth, leftSideBearing);
-
+		
 		int[] w = new int[1];
 		int[] h = new int[1];
 		int[] xoff = new int[1];
 		int[] yoff = new int[1];
-		ByteBuffer glyph = STBTruetype.stbtt_GetCodepointBitmap(m_fontInfo, 0, m_fontScale, charCode, w, h, xoff, yoff);
+		ByteBuffer glyph = STBTruetype.stbtt_GetCodepointSDF(m_fontInfo, m_fontScale, charCode, sdfPadding, (byte) sdfOnEdge, 1.0f * sdfOnEdge / sdfPadding, w, h, xoff, yoff);
 
 		int texID = GL30.glGenTextures();
 		GL30.glPixelStorei(GL30.GL_UNPACK_ALIGNMENT, 1);
 		GL30.glBindTexture(GL30.GL_TEXTURE_2D, texID);
 		GL30.glTexImage2D(GL30.GL_TEXTURE_2D, 0, GL30.GL_RGBA, w[0], h[0], 0, GL30.GL_RED, GL30.GL_UNSIGNED_BYTE, glyph);
-		GL30.glTexParameteri(GL30.GL_TEXTURE_2D, GL30.GL_TEXTURE_MAG_FILTER, GL30.GL_NEAREST);
-		GL30.glTexParameteri(GL30.GL_TEXTURE_2D, GL30.GL_TEXTURE_MIN_FILTER, GL30.GL_NEAREST);
+		GL30.glTexParameteri(GL30.GL_TEXTURE_2D, GL30.GL_TEXTURE_MAG_FILTER, GL30.GL_LINEAR);
+		GL30.glTexParameteri(GL30.GL_TEXTURE_2D, GL30.GL_TEXTURE_MIN_FILTER, GL30.GL_LINEAR);
 		GL30.glTexParameteri(GL30.GL_TEXTURE_2D, GL30.GL_TEXTURE_WRAP_S, GL30.GL_CLAMP_TO_EDGE);
 		GL30.glTexParameteri(GL30.GL_TEXTURE_2D, GL30.GL_TEXTURE_WRAP_T, GL30.GL_CLAMP_TO_EDGE);
 		

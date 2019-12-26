@@ -20,7 +20,7 @@ public class ButtonWidget extends Widget {
 		addPrimitive(new RectPrimitive(0, 0, width, height, 0.0f));
 		addPrimitive(new ShaderPrimitive(ShaderType.FONT));
 		addPrimitive(new ColorPrimitive(1.0f, 1.0f, 1.0f, 1.0f));
-		addPrimitive(new TextPrimitive(text, true, false, 42, width / 2.0f, height / 2.0f, 0.0f, AlignmentX.CENTER, AlignmentY.CENTER));
+		addPrimitive(new TextPrimitive(text, true, 42, 1.0f, width / 2.0f, height / 2.0f, 0.0f, AlignmentX.CENTER, AlignmentY.CENTER));
 	}
 	
 	@Override

@@ -36,7 +36,7 @@ public class PlayerEntity extends GameEntity {
 		
 		addPrimitive(new ShaderPrimitive(ShaderType.FONT));
 		addPrimitive(new ColorPrimitive(0.0f, 0.0f, 0.0f, 1.0f));
-		m_text = addPrimitive(new TextPrimitive("X", false, true, 32, x, y, 0.0f, TextPrimitive.AlignmentX.CENTER, TextPrimitive.AlignmentY.CENTER));
+		m_text = addPrimitive(new TextPrimitive("X", false, 32, 0.0f, x, y, 0.0f, TextPrimitive.AlignmentX.CENTER, TextPrimitive.AlignmentY.CENTER));
 		
 		m_body = addBody(new BoxBody(true, x, y, width, height));
 		m_body.setRotation(30);

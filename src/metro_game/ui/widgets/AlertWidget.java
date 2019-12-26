@@ -18,7 +18,7 @@ public class AlertWidget extends Widget {
 		addPrimitive(new RectPrimitive(0.2f, 0.2f, 0.6f, 0.65f, 0.0f));
 		addPrimitive(new ShaderPrimitive(ShaderType.FONT));
 		addPrimitive(new ColorPrimitive(1.0f, 1.0f, 1.0f, 1.0f));
-		addPrimitive(new TextPrimitive(text, false, false, 48, 0.5f, 0.3f, 0.0f, TextPrimitive.AlignmentX.CENTER, TextPrimitive.AlignmentY.TOP));
+		addPrimitive(new TextPrimitive(text, false, 48, 1.0f, 0.5f, 0.3f, 0.0f, TextPrimitive.AlignmentX.CENTER, TextPrimitive.AlignmentY.TOP));
 		
 		float buttonGap = 0.05f;
 		float buttonWidth = 0.45f / buttons.length - buttonGap;

@@ -72,7 +72,11 @@ public class Renderer {
 			}
 			case FONT: {
 				if (!m_shaderCache.containsKey(shaderType)) {
-					m_shaderCache.put(shaderType, new FontShader());
+					FontShader shader = new FontShader();
+					shader.use();
+					shader.setSdfPixel((Font.sdfOnEdge / 255.0f) / Font.sdfPadding);
+					shader.setSdfOnEdge(Font.sdfOnEdge / 255.0f);
+					m_shaderCache.put(shaderType, shader);
 				}
 				return m_shaderCache.get(shaderType);
 			}
@@ -120,8 +124,14 @@ public class Renderer {
 			break;
 		}
 		case TEXT: {
+			if (!(m_currentShader instanceof FontShader)) {
+				System.out.println("Wrong shader bound for text");
+				break;
+			}
 			TextPrimitive text = (TextPrimitive) primitive;
-			boolean smoothed = text.isSmoothed();
+			FontShader shader = (FontShader) m_currentShader;
+			shader.setBorder(text.getBorder());
+			shader.setBorderColor(text.getBorderColor());
 			String str = text.getText();
 			if (text.isTranslated()) {
 				str = m_context.getString(str);
@@ -138,22 +148,16 @@ public class Renderer {
 			if (text.getAlignmentY() == TextPrimitive.AlignmentY.CENTER) {
 				model.translate(0.0f, (font.getDescent() - font.getAscent()) / 2.0f, 0.0f);
 			}
+			GL30.glEnable(GL30.GL_MULTISAMPLE);
 			GL30.glEnable(GL30.GL_TEXTURE_2D);
 			for (int i = 0; i < str.length(); i++) {
 				Font.GlyphInfo glyph = font.renderGlyph(str.charAt(i));
-				if (!(m_currentShader instanceof FontShader)) {
-					System.out.println("Wrong shader bound for text");
-					return;
-				}
-				((FontShader) m_currentShader).setTexture(glyph.getTexID());
-				if (smoothed) {
-					GL30.glTexParameteri(GL30.GL_TEXTURE_2D, GL30.GL_TEXTURE_MAG_FILTER, GL30.GL_LINEAR);
-					GL30.glTexParameteri(GL30.GL_TEXTURE_2D, GL30.GL_TEXTURE_MIN_FILTER, GL30.GL_LINEAR);
-				}
+				shader.setTexture(glyph.getTexID());
 				drawRect(glyph.getWidth(), glyph.getHeight(), new Matrix4f(viewProjection).mul(model).translate(glyph.getOffsetX(), glyph.getOffsetY(), 0.0f));
 				model.translate(glyph.getAdvanceWidth(), 0.0f, 0.0f);
 			}
 			GL30.glDisable(GL30.GL_TEXTURE_2D);
+			GL30.glDisable(GL30.GL_MULTISAMPLE);
 			break;
 		}
 		}
