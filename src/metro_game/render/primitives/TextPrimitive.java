@@ -16,17 +16,19 @@ public class TextPrimitive extends Primitive {
 	private String m_font;
 	private String m_text;
 	private boolean m_translated;
+	private boolean m_smoothed;
 	private int m_fontSize;
 	private Vector2f m_position;
 	private float m_rotation;
 	private AlignmentX m_alignmentX;
 	private AlignmentY m_alignmentY;
 	
-	public TextPrimitive(String text, boolean translated, int fontSize, float x, float y, float rotation, AlignmentX alignmentX, AlignmentY alignmentY) {
+	public TextPrimitive(String text, boolean translated, boolean smoothed, int fontSize, float x, float y, float rotation, AlignmentX alignmentX, AlignmentY alignmentY) {
 		super(Type.TEXT);
 		m_font = "NotoSerif-Regular.ttf";
 		m_text = text;
 		m_translated = translated;
+		m_smoothed = smoothed;
 		m_fontSize = fontSize;
 		m_position = new Vector2f(x, y);
 		m_rotation = rotation;
@@ -56,6 +58,14 @@ public class TextPrimitive extends Primitive {
 	
 	public boolean isTranslated() {
 		return m_translated;
+	}
+	
+	public void setSmoothed(boolean smoothed) {
+		m_smoothed = smoothed;
+	}
+	
+	public boolean isSmoothed() {
+		return m_smoothed;
 	}
 	
 	public void setFontSize(int fontSize) {

@@ -10,5 +10,6 @@ in vec2 v_texCoords;
 out vec4 outColor;
 
 void main() {
-	outColor = vec4(u_color.rgb, u_color.a * texture2D(u_texture, v_texCoords).r);
+	float alpha = texture2D(u_texture, v_texCoords).r;
+	outColor = vec4(u_color.rgb, u_color.a * alpha);
 }

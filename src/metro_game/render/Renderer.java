@@ -41,8 +41,7 @@ public class Renderer {
 		m_shaderCache = new HashMap<ShaderType, Shader>();
 		
 		GL.createCapabilities();
-		GL30.glClearColor(0, 0, 0, 1);
-		GL30.glEnable(GL30.GL_MULTISAMPLE);
+		GL30.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		GL30.glEnable(GL30.GL_BLEND);
 		GL30.glBlendFunc(GL30.GL_SRC_ALPHA, GL30.GL_ONE_MINUS_SRC_ALPHA);
 		
@@ -115,21 +114,23 @@ public class Renderer {
 			if (center) {
 				model.translate(-size.x / 2.0f, -size.y / 2.0f, 0.0f);
 			}
+			GL30.glEnable(GL30.GL_MULTISAMPLE);
 			drawRect(size.x, size.y, new Matrix4f(viewProjection).mul(model));
+			GL30.glDisable(GL30.GL_MULTISAMPLE);
 			break;
 		}
 		case TEXT: {
 			TextPrimitive text = (TextPrimitive) primitive;
+			boolean smoothed = text.isSmoothed();
 			String str = text.getText();
 			if (text.isTranslated()) {
 				str = m_context.getString(str);
 			}
-			float advance = 0;
 			Vector2f position = text.getPosition();
-			Font font = m_fontCache.getFont(text.getFont(), text.getFontSize());
 			model.translate(position.x, position.y, 0.0f);
 			model.rotate((float) Math.toRadians(text.getRotation()), 0.0f, 0.0f, 1.0f);
 			model.scale(viewWidth, viewHeight, 1.0f);
+			Font font = m_fontCache.getFont(text.getFont(), text.getFontSize());
 			model.translate(0.0f, font.getAscent(), 0.0f);
 			if (text.getAlignmentX() == TextPrimitive.AlignmentX.CENTER) {
 				model.translate(-font.getStringWidth(str) / 2.0f, 0.0f, 0.0f);
@@ -137,7 +138,6 @@ public class Renderer {
 			if (text.getAlignmentY() == TextPrimitive.AlignmentY.CENTER) {
 				model.translate(0.0f, (font.getDescent() - font.getAscent()) / 2.0f, 0.0f);
 			}
-			Matrix4f modelViewProjection = new Matrix4f(viewProjection).mul(model);
 			GL30.glEnable(GL30.GL_TEXTURE_2D);
 			for (int i = 0; i < str.length(); i++) {
 				Font.GlyphInfo glyph = font.renderGlyph(str.charAt(i));
@@ -146,10 +146,12 @@ public class Renderer {
 					return;
 				}
 				((FontShader) m_currentShader).setTexture(glyph.getTexID());
-				Matrix4f mvp = new Matrix4f(modelViewProjection);
-				mvp.translate(advance + glyph.getOffsetX(), glyph.getOffsetY(), 0.0f);
-				drawRect(glyph.getWidth(), glyph.getHeight(), mvp);
-				advance += glyph.getAdvanceWidth();
+				if (smoothed) {
+					GL30.glTexParameteri(GL30.GL_TEXTURE_2D, GL30.GL_TEXTURE_MAG_FILTER, GL30.GL_LINEAR);
+					GL30.glTexParameteri(GL30.GL_TEXTURE_2D, GL30.GL_TEXTURE_MIN_FILTER, GL30.GL_LINEAR);
+				}
+				drawRect(glyph.getWidth(), glyph.getHeight(), new Matrix4f(viewProjection).mul(model).translate(glyph.getOffsetX(), glyph.getOffsetY(), 0.0f));
+				model.translate(glyph.getAdvanceWidth(), 0.0f, 0.0f);
 			}
 			GL30.glDisable(GL30.GL_TEXTURE_2D);
 			break;
