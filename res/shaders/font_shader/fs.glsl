@@ -24,5 +24,5 @@ void main() {
 		color = mix(u_border_color, u_color, alpha);
 		alpha = smoothstep(onborder - smoothing, onborder + smoothing, distance);
 	}
-	outColor = vec4(color.rgb, color.a * alpha);
+	outColor = color * alpha;
 }

@@ -47,7 +47,7 @@ public class Renderer {
 		GL.createCapabilities();
 		GL30.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		GL30.glEnable(GL30.GL_BLEND);
-		GL30.glBlendFunc(GL30.GL_SRC_ALPHA, GL30.GL_ONE_MINUS_SRC_ALPHA);
+		GL30.glBlendFunc(GL30.GL_ONE, GL30.GL_ONE_MINUS_SRC_ALPHA);
 		
 		float[] quadVertices = new float[] {0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f};
 		float[] circleVertices = new float[2 * 16];
@@ -138,7 +138,8 @@ public class Renderer {
 		}
 		case COLOR: {
 			ColorPrimitive color = (ColorPrimitive) primitive;
-			m_currentShader.setColor(color.getR(), color.getG(), color.getB(), color.getA());
+			float alpha = color.getA();
+			m_currentShader.setColor(color.getR() * alpha, color.getG() * alpha, color.getB() * alpha, color.getA());
 			break;
 		}
 		case RECT: {
