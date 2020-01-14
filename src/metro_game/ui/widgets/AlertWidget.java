@@ -13,9 +13,9 @@ public class AlertWidget extends Widget {
 		
 		addPrimitive(new ShaderPrimitive(ShaderType.DEFAULT_GAME));
 		addPrimitive(new ColorPrimitive(0.0f, 0.0f, 0.0f, 0.5f));
-		addPrimitive(new RectPrimitive(0, 0, getWidth(), getHeight(), 0.0f));
+		addPrimitive(new RectPrimitive(0, 0, getWidth(), getHeight(), 0.0f, false));
 		addPrimitive(new ColorPrimitive(0.75f, 0.0f, 0.0f, 0.9f));
-		addPrimitive(new RectPrimitive(0.2f, 0.2f, 0.6f, 0.65f, 0.0f));
+		addPrimitive(new RectPrimitive(0.2f, 0.2f, 0.6f, 0.65f, 0.0f, false));
 		addPrimitive(new ShaderPrimitive(ShaderType.FONT));
 		addPrimitive(new ColorPrimitive(1.0f, 1.0f, 1.0f, 1.0f));
 		addPrimitive(new TextPrimitive(text, false, 48, 1.0f, 0.5f, 0.3f, 0.0f, TextPrimitive.AlignmentX.CENTER, TextPrimitive.AlignmentY.TOP));

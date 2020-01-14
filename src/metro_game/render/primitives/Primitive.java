@@ -5,6 +5,7 @@ public class Primitive {
 		SHADER,
 		COLOR,
 		RECT,
+		CIRCLE,
 		TEXT
 	}
 	

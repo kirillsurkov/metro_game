@@ -19,6 +19,6 @@ public class Utils {
 		byte[] bytes = Files.readAllBytes(Paths.get(path));
 		ByteBuffer buf = ByteBuffer.allocateDirect(bytes.length).order(ByteOrder.nativeOrder());
 		buf.put(bytes);
-		return buf.flip();
+		return (ByteBuffer) buf.flip();
 	}
 }

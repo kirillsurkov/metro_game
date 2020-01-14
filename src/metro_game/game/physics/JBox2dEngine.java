@@ -9,7 +9,9 @@ import java.util.Stack;
 import org.jbox2d.callbacks.ContactImpulse;
 import org.jbox2d.callbacks.ContactListener;
 import org.jbox2d.collision.Manifold;
+import org.jbox2d.collision.shapes.CircleShape;
 import org.jbox2d.collision.shapes.PolygonShape;
+import org.jbox2d.collision.shapes.Shape;
 import org.jbox2d.common.Vec2;
 import org.jbox2d.dynamics.Body;
 import org.jbox2d.dynamics.BodyDef;
@@ -22,6 +24,7 @@ import org.joml.Vector2f;
 import metro_game.game.entities.GameEntity;
 import metro_game.game.physics.Physics.OwnerBodyPair;
 import metro_game.game.physics.bodies.BoxBody;
+import metro_game.game.physics.bodies.CircleBody;
 
 public class JBox2dEngine implements Engine, ContactListener {
 	private World m_world;
@@ -53,18 +56,25 @@ public class JBox2dEngine implements Engine, ContactListener {
 		def.angularDamping = 0.9f;
 		def.type = body.isDynamic() ? BodyType.DYNAMIC : BodyType.STATIC;
 		Body newBody = m_world.createBody(def);
-		PolygonShape poly = new PolygonShape();
+		Shape shape = null;
 		
 		switch (body.getType()) {
 		case BOX: {
 			BoxBody boxBody = (BoxBody) body;
-			poly.setAsBox(boxBody.getWidth() / 2.0f, boxBody.getHeight() / 2.0f);
+			shape = new PolygonShape();
+			shape.setAsBox(boxBody.getWidth() / 2.0f, boxBody.getHeight() / 2.0f);
+			break;
+		}
+		case CIRCLE: {
+			CircleBody circleBody = (CircleBody) body;
+			shape = new CircleShape();
+			shape.setRadius(circleBody.getRadius());
 			break;
 		}
 		}
 		
 		FixtureDef fixtureDef = new FixtureDef();
-		fixtureDef.shape = poly;
+		fixtureDef.shape = shape;
 		fixtureDef.density = 1.0f;
 		fixtureDef.restitution = 1.0f;
 		newBody.createFixture(fixtureDef);

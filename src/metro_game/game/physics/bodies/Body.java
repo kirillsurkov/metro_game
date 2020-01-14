@@ -4,7 +4,8 @@ import org.joml.Vector2f;
 
 public class Body {
 	public enum Type {
-		BOX
+		BOX,
+		CIRCLE
 	}
 	
 	private Type m_type;
