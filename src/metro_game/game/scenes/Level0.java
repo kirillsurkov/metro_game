@@ -3,6 +3,7 @@ package metro_game.game.scenes;
 import metro_game.Context;
 import metro_game.game.entities.ChairEntity;
 import metro_game.game.entities.PlayerEntityGolf;
+import metro_game.game.entities.SensorEntity;
 import metro_game.game.entities.WallEntity;
 
 public class Level0 extends LevelBase {
@@ -37,6 +38,11 @@ public class Level0 extends LevelBase {
 		addChairs(Side.RIGHT, 2.4f);
 		addChairs(Side.RIGHT, -2.4f);
 		addChairs(Side.RIGHT, -11.4f);
+		
+		addGameEntity(new SensorEntity(m_context, 4.46f, 6.9f, 0.75f, 4.0f, 1.0f));
+		addGameEntity(new SensorEntity(m_context, 4.46f, -6.9f, 0.75f, 4.0f, 2.0f));
+		addGameEntity(new SensorEntity(m_context, -4.46f, 6.9f, 0.75f, 4.0f, 3.0f));
+		addGameEntity(new SensorEntity(m_context, -4.46f, -6.9f, 0.75f, 4.0f, 4.0f));
 	}
 	
 	@Override

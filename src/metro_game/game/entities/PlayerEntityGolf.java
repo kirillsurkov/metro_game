@@ -49,7 +49,7 @@ public class PlayerEntityGolf extends GameEntity {
 	}
 	
 	@Override
-	public void onCollide(GameEntity gameEntity) {
+	public void onCollideStart(GameEntity gameEntity) {
 		if (gameEntity instanceof DummyBoxEntity) {
 			DummyBoxEntity entity = (DummyBoxEntity) gameEntity;
 			if (entity.isFragile()) {
