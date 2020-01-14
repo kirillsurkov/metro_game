@@ -19,7 +19,10 @@ public class GameEntity {
 		m_primitives = new ArrayList<Primitive>();
 	}
 	
-	public void onCollide(GameEntity gameEntity) {
+	public void onCollideStart(GameEntity gameEntity) {
+	}
+	
+	public void onCollideEnd(GameEntity gameEntity) {
 	}
 	
 	public void setNeedRemove(boolean needRemove) {
@@ -30,9 +33,9 @@ public class GameEntity {
 		return m_needRemove;
 	}
 	
-	public <T extends Primitive> T addPrimitive(T shape) {
-		m_primitives.add(shape);
-		return shape;
+	public <T extends Primitive> T addPrimitive(T primitive) {
+		m_primitives.add(primitive);
+		return primitive;
 	}
 	
 	public List<Primitive> getPrimitives() {

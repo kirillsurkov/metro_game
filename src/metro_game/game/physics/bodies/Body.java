@@ -10,6 +10,7 @@ public class Body {
 	
 	private Type m_type;
 	private boolean m_dynamic;
+	private boolean m_sensor;
 	private Vector2f m_position;
 	private Vector2f m_linearVelocity;
 	private float m_rotation;
@@ -18,6 +19,7 @@ public class Body {
 	public Body(Type type, boolean dynamic, float x, float y, float xVel, float yVel, float rotation, float angVel) {
 		m_type = type;
 		m_dynamic = dynamic;
+		m_sensor = false;
 		m_position = new Vector2f(x, y);
 		m_linearVelocity = new Vector2f(xVel, yVel);
 		m_rotation = rotation;
@@ -26,6 +28,14 @@ public class Body {
 	
 	public boolean isDynamic() {
 		return m_dynamic;
+	}
+	
+	public void setSensor(boolean sensor) {
+		m_sensor = sensor;
+	}
+	
+	public boolean isSensor() {
+		return m_sensor;
 	}
 	
 	public Vector2f getPosition() {
