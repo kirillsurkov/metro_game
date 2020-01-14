@@ -20,7 +20,7 @@ public class DummyBoxEntity extends GameEntity {
 		m_fragile = fragile;
 		addPrimitive(new ShaderPrimitive(ShaderType.DEFAULT_GAME));
 		addPrimitive(new ColorPrimitive(0.0f, 0.5f, 0.75f, 1.0f));
-		m_rect = addPrimitive(new RectPrimitive(x, y, width, height, rotation));
+		m_rect = addPrimitive(new RectPrimitive(x, y, width, height, rotation, true));
 		
 		addPrimitive(new ShaderPrimitive(ShaderType.FONT));
 		addPrimitive(new ColorPrimitive(1.0f, 0.0f, 0.0f, 1.0f));

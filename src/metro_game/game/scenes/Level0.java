@@ -1,21 +1,47 @@
 package metro_game.game.scenes;
 
 import metro_game.Context;
-import metro_game.game.entities.DummyBoxEntity;
-import metro_game.game.entities.PlayerEntity;
+import metro_game.game.entities.ChairEntity;
+import metro_game.game.entities.PlayerEntityGolf;
+import metro_game.game.entities.WallEntity;
 
 public class Level0 extends LevelBase {
+	private enum Side {
+		LEFT,
+		RIGHT
+	}
+	
 	public Level0(Context context) {
 		super(context);
 	}
 	
+	private void addChairs(Side side, float y) {
+		float x = 4.1f * (side == Side.LEFT ? -1 : 1);
+		addGameEntity(new ChairEntity(m_context, x, y + 1.6f));
+		addGameEntity(new ChairEntity(m_context, x, y));
+		addGameEntity(new ChairEntity(m_context, x, y - 1.6f));
+	}
+	
+	private void createCarriage() {
+		addGameEntity(new WallEntity(m_context, 5.0f, 0.0f, 27.8f, 90.0f));
+		addGameEntity(new WallEntity(m_context, -5.0f, 0.0f, 27.8f, 90.0f));
+		addGameEntity(new WallEntity(m_context, 0.0f, 13.9f, 10.0f, 0.0f));
+		addGameEntity(new WallEntity(m_context, 0.0f, -13.9f, 10.0f, 0.0f));
+		
+		addChairs(Side.LEFT, 11.4f);
+		addChairs(Side.LEFT, 2.4f);
+		addChairs(Side.LEFT, -2.4f);
+		addChairs(Side.LEFT, -11.4f);
+		
+		addChairs(Side.RIGHT, 11.4f);
+		addChairs(Side.RIGHT, 2.4f);
+		addChairs(Side.RIGHT, -2.4f);
+		addChairs(Side.RIGHT, -11.4f);
+	}
+	
 	@Override
 	public void init() {
-		for (int x = 0; x < 10; x++) {
-			for (int y = 0; y < 10; y++) {
-				addGameEntity(new DummyBoxEntity(m_context, true, true, -10.0f + x * 2.0f, y * 2.0f, 1.0f, 1.0f, (float) Math.random() * 360.0f));
-			}
-		}
-		addGameEntity(new PlayerEntity(m_context, 0.0f, -5.0f));
+		createCarriage();
+		addGameEntity(new PlayerEntityGolf(m_context, 0.0f, 0.0f));
 	}
 }

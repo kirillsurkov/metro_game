@@ -4,7 +4,9 @@ import org.joml.Vector2f;
 
 import metro_game.Context;
 import metro_game.game.events.CameraEvent;
-import metro_game.game.physics.bodies.BoxBody;
+import metro_game.game.physics.bodies.Body;
+import metro_game.game.physics.bodies.CircleBody;
+import metro_game.render.primitives.CirclePrimitive;
 import metro_game.render.primitives.ColorPrimitive;
 import metro_game.render.primitives.RectPrimitive;
 import metro_game.render.primitives.ShaderPrimitive;
@@ -13,10 +15,10 @@ import metro_game.render.primitives.ShaderPrimitive.ShaderType;
 import metro_game.ui.events.UIEvent;
 import metro_game.ui.events.MouseButtonEvent;
 
-public class PlayerEntity extends GameEntity {
-	private BoxBody m_body;
+public class PlayerEntityGolf extends GameEntity {
+	private Body m_body;
 	private Vector2f m_clickPos;
-	private RectPrimitive m_rect;
+	private CirclePrimitive m_rect;
 	private RectPrimitive m_aimRect;
 	private TextPrimitive m_text;
 	private float m_aimShapeLength;
@@ -24,21 +26,20 @@ public class PlayerEntity extends GameEntity {
 	private float m_aimPower;
 	private float m_aimPowerMax;
 	
-	public PlayerEntity(Context context, float x, float y) {
+	public PlayerEntityGolf(Context context, float x, float y) {
 		super(context);
-		float width = 1.0f;
-		float height = 1.0f;
+		float radius = 0.5f;
 		addPrimitive(new ShaderPrimitive(ShaderType.DEFAULT_GAME));
 		addPrimitive(new ColorPrimitive(1.0f, 1.0f, 1.0f, 1.0f));
-		m_aimRect = addPrimitive(new RectPrimitive(0.0f, 0.0f, 0.0f, 0.1f, 0.0f));
+		m_aimRect = addPrimitive(new RectPrimitive(0.0f, 0.0f, 0.0f, 0.1f, 0.0f, true));
 		m_aimRect.setVisible(false);
-		m_rect = addPrimitive(new RectPrimitive(x, y, width, height, 0.0f));
+		m_rect = addPrimitive(new CirclePrimitive(x, y, radius, 0.0f));
 		
 		addPrimitive(new ShaderPrimitive(ShaderType.FONT));
 		addPrimitive(new ColorPrimitive(0.0f, 0.0f, 0.0f, 1.0f));
 		m_text = addPrimitive(new TextPrimitive("X", false, 32, 0.0f, x, y, 0.0f, TextPrimitive.AlignmentX.CENTER, TextPrimitive.AlignmentY.CENTER));
 		
-		m_body = addBody(new BoxBody(true, x, y, width, height));
+		m_body = addBody(new CircleBody(true, x, y, 0.0f, 0.0f, 0.0f, 0.0f, radius));
 		m_body.setRotation(30);
 		m_clickPos = null;
 		m_aimShapeLength = 5.0f;
