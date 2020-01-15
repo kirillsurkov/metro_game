@@ -43,7 +43,7 @@ public class SensorEntity extends GameEntity {
 	public void onCollideEnd(GameEntity gameEntity) {
 		if (gameEntity instanceof PlayerEntityGolf) {
 			m_active = false;
-			m_color.set(1.0f, 0.0f, 0.0f, 1.0f);
+			onDeactivated();
 		}
 	}
 	
@@ -58,7 +58,15 @@ public class SensorEntity extends GameEntity {
 		if (m_timer >= m_timeout) {
 			m_active = false;
 			m_timer = 0.0f;
-			m_color.set(1.0f, 0.25f, 0.25f, 1.0f);
+			onActivated();
 		}
+	}
+	
+	public void onActivated() {
+		m_color.set(1.0f, 0.25f, 0.25f, 1.0f);
+	}
+	
+	public void onDeactivated() {
+		m_color.set(1.0f, 0.0f, 0.0f, 1.0f);
 	}
 }

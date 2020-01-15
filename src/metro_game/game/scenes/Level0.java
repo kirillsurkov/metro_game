@@ -2,6 +2,7 @@ package metro_game.game.scenes;
 
 import metro_game.Context;
 import metro_game.game.entities.ChairEntity;
+import metro_game.game.entities.DoorEntity;
 import metro_game.game.entities.PlayerEntityGolf;
 import metro_game.game.entities.SensorEntity;
 import metro_game.game.entities.WallEntity;
@@ -24,7 +25,8 @@ public class Level0 extends LevelBase {
 	}
 	
 	private void createCarriage() {
-		addGameEntity(new WallEntity(m_context, 5.0f, 0.0f, 27.8f, 90.0f));
+		addGameEntity(new WallEntity(m_context, 5.0f, -4.5f, 18.8f, 90.0f));
+		addGameEntity(new WallEntity(m_context, 5.0f, 11.4f, 5.0f, 90.0f));
 		addGameEntity(new WallEntity(m_context, -5.0f, 0.0f, 27.8f, 90.0f));
 		addGameEntity(new WallEntity(m_context, 0.0f, 13.9f, 10.0f, 0.0f));
 		addGameEntity(new WallEntity(m_context, 0.0f, -13.9f, 10.0f, 0.0f));
@@ -39,7 +41,21 @@ public class Level0 extends LevelBase {
 		addChairs(Side.RIGHT, -2.4f);
 		addChairs(Side.RIGHT, -11.4f);
 		
-		addGameEntity(new SensorEntity(m_context, 4.46f, 6.9f, 0.75f, 4.0f, 1.0f));
+		final DoorEntity door = addGameEntity(new DoorEntity(m_context, 5.0f, 6.9f));
+		
+		addGameEntity(new SensorEntity(m_context, 4.46f, 6.9f, 0.75f, 4.0f, 1.0f) {
+			@Override
+			public void onActivated() {
+				super.onActivated();
+				door.open();
+			}
+			
+			@Override
+			public void onDeactivated() {
+				super.onDeactivated();
+				door.close();
+			}
+		});
 		addGameEntity(new SensorEntity(m_context, 4.46f, -6.9f, 0.75f, 4.0f, 2.0f));
 		addGameEntity(new SensorEntity(m_context, -4.46f, 6.9f, 0.75f, 4.0f, 3.0f));
 		addGameEntity(new SensorEntity(m_context, -4.46f, -6.9f, 0.75f, 4.0f, 4.0f));
