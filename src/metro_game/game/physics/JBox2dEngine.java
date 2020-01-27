@@ -48,6 +48,8 @@ public class JBox2dEngine implements Engine, ContactListener {
 			current = current.getNext();
 		}
 		m_bodies.clear();
+		m_contactsStart.clear();
+		m_contactsEnd.clear();
 	}
 	
 	@Override
