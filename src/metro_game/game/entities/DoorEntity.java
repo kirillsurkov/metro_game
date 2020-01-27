@@ -17,25 +17,25 @@ public class DoorEntity extends GameEntity {
 	private RectPrimitive m_rect_bottom;
 	private Body m_body_top;
 	private Body m_body_bottom;
+	private float m_width;
 	private float m_origin_top;
 	private float m_origin_bottom;
-	private float m_offset;
 	
-	public DoorEntity(Context context, float x, float y) {
+	public DoorEntity(Context context, float width, float x, float y) {
 		super(context);
 		
 		m_opened = false;
 		m_timer = 0.0f;
 		m_timeout = 1.0f;
-		m_offset = 1.0f;
-		m_origin_top = y + m_offset;
-		m_origin_bottom = y - m_offset;
+		m_width = width;
+		m_origin_top = y + m_width * 0.25f;
+		m_origin_bottom = y - m_width * 0.25f;
 		
 		addPrimitive(new ShaderPrimitive(ShaderType.DEFAULT_GAME));
 		addPrimitive(new ColorPrimitive(1.0f, 0.0f, 0.0f, 1.0f));
 		
-		m_rect_top = addPrimitive(new RectPrimitive(x, m_origin_top, 0.1f, 2.0f, 0.0f, true));
-		m_rect_bottom = addPrimitive(new RectPrimitive(x, m_origin_bottom, 0.1f, 2.0f, 0.0f, true));
+		m_rect_top = addPrimitive(new RectPrimitive(x, m_origin_top, 0.1f, m_width * 0.5f, 0.0f, true));
+		m_rect_bottom = addPrimitive(new RectPrimitive(x, m_origin_bottom, 0.1f, m_width * 0.5f, 0.0f, true));
 		
 		m_body_top = addBody(new BoxBody(false, x, m_origin_top, 0.1f, 1.0f));
 		m_body_bottom = addBody(new BoxBody(false, x, m_origin_bottom, 0.1f, 1.0f));
@@ -60,7 +60,9 @@ public class DoorEntity extends GameEntity {
 		if (!m_opened) {
 			return;
 		}
-		if (!m_processing) {
+		if (m_processing) {
+			m_timer = m_timeout - m_timer;
+		} else {
 			m_timer = 0.0f;
 		}
 		m_processing = true;
@@ -79,8 +81,8 @@ public class DoorEntity extends GameEntity {
 				m_timer = m_timeout;
 			}
 			float mul = 2.0f * (m_opened ? m_timer : (1 - m_timer)) / m_timeout;
-			m_body_top.getPosition().y = m_origin_top + m_offset * mul;
-			m_body_bottom.getPosition().y = m_origin_bottom - m_offset * mul;
+			m_body_top.getPosition().y = m_origin_top + 0.25f * m_width * mul;
+			m_body_bottom.getPosition().y = m_origin_bottom - 0.25f * m_width * mul;
 		}
 	}
 }

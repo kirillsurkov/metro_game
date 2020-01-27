@@ -1,69 +1,28 @@
 package metro_game.game.scenes;
 
 import metro_game.Context;
-import metro_game.game.entities.ChairEntity;
-import metro_game.game.entities.DoorEntity;
-import metro_game.game.entities.PlayerEntityGolf;
-import metro_game.game.entities.SensorEntity;
-import metro_game.game.entities.WallEntity;
+import metro_game.game.entities.EnemyEntity;
 
 public class Level0 extends LevelBase {
-	private enum Side {
-		LEFT,
-		RIGHT
-	}
-	
 	public Level0(Context context) {
-		super(context);
-	}
-	
-	private void addChairs(Side side, float y) {
-		float x = 4.1f * (side == Side.LEFT ? -1 : 1);
-		addGameEntity(new ChairEntity(m_context, x, y + 1.6f));
-		addGameEntity(new ChairEntity(m_context, x, y));
-		addGameEntity(new ChairEntity(m_context, x, y - 1.6f));
-	}
-	
-	private void createCarriage() {
-		addGameEntity(new WallEntity(m_context, 5.0f, -4.5f, 18.8f, 90.0f));
-		addGameEntity(new WallEntity(m_context, 5.0f, 11.4f, 5.0f, 90.0f));
-		addGameEntity(new WallEntity(m_context, -5.0f, 0.0f, 27.8f, 90.0f));
-		addGameEntity(new WallEntity(m_context, 0.0f, 13.9f, 10.0f, 0.0f));
-		addGameEntity(new WallEntity(m_context, 0.0f, -13.9f, 10.0f, 0.0f));
-		
-		addChairs(Side.LEFT, 11.4f);
-		addChairs(Side.LEFT, 2.4f);
-		addChairs(Side.LEFT, -2.4f);
-		addChairs(Side.LEFT, -11.4f);
-		
-		addChairs(Side.RIGHT, 11.4f);
-		addChairs(Side.RIGHT, 2.4f);
-		addChairs(Side.RIGHT, -2.4f);
-		addChairs(Side.RIGHT, -11.4f);
-		
-		final DoorEntity door = addGameEntity(new DoorEntity(m_context, 5.0f, 6.9f));
-		
-		addGameEntity(new SensorEntity(m_context, 4.46f, 6.9f, 0.75f, 4.0f, 1.0f) {
-			@Override
-			public void onActivated() {
-				super.onActivated();
-				door.open();
-			}
-			
-			@Override
-			public void onDeactivated() {
-				super.onDeactivated();
-				door.close();
-			}
-		});
-		addGameEntity(new SensorEntity(m_context, 4.46f, -6.9f, 0.75f, 4.0f, 2.0f));
-		addGameEntity(new SensorEntity(m_context, -4.46f, 6.9f, 0.75f, 4.0f, 3.0f));
-		addGameEntity(new SensorEntity(m_context, -4.46f, -6.9f, 0.75f, 4.0f, 4.0f));
+		super(context, 8.0f);
 	}
 	
 	@Override
-	public void init() {
-		createCarriage();
-		addGameEntity(new PlayerEntityGolf(m_context, 0.0f, 0.0f));
+	protected void createCrowd() {
+		for (int y = -5; y <= 5; y++) {
+			for (int x = -1; x <= 1; x++) {
+				if (x == 0) {
+					if (Math.random() <= 0.875f) {
+						continue;
+					}
+				} else {
+					if (Math.random() <= 0.75f) {
+						continue;
+					}
+				}
+				addGameEntity(new EnemyEntity(m_context, x * 1.6f, y * 2.4f));
+			}
+		}
 	}
 }

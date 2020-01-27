@@ -1,0 +1,31 @@
+package metro_game.game.entities;
+
+import metro_game.Context;
+import metro_game.game.physics.bodies.Body;
+import metro_game.game.physics.bodies.CircleBody;
+import metro_game.render.primitives.CirclePrimitive;
+import metro_game.render.primitives.ColorPrimitive;
+import metro_game.render.primitives.ShaderPrimitive;
+import metro_game.render.primitives.ShaderPrimitive.ShaderType;
+
+public class EnemyEntity extends GameEntity {
+	private CirclePrimitive m_circle;
+	private Body m_body;
+	
+	public EnemyEntity(Context context, float x, float y) {
+		super(context);
+		float radius = 0.6f;
+		
+		addPrimitive(new ShaderPrimitive(ShaderType.DEFAULT_GAME));
+		addPrimitive(new ColorPrimitive(1.0f, 0.5f, 0.0f, 1.0f));
+		m_circle = addPrimitive(new CirclePrimitive(x, y, radius, 0.0f));
+		
+		m_body = addBody(new CircleBody(true, x, y, 0.0f, 0.0f, 0.0f, 0.0f, radius));
+	}
+	
+	@Override
+	public void update(double delta) {
+		m_circle.getPosition().set(m_body.getPosition());
+		m_circle.setRotation(m_body.getRotation());
+	}
+}

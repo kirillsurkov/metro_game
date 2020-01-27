@@ -18,7 +18,7 @@ import metro_game.ui.events.MouseButtonEvent;
 public class PlayerEntityGolf extends GameEntity {
 	private Body m_body;
 	private Vector2f m_clickPos;
-	private CirclePrimitive m_rect;
+	private CirclePrimitive m_circle;
 	private RectPrimitive m_aimRect;
 	private TextPrimitive m_text;
 	private float m_aimShapeLength;
@@ -28,12 +28,12 @@ public class PlayerEntityGolf extends GameEntity {
 	
 	public PlayerEntityGolf(Context context, float x, float y) {
 		super(context);
-		float radius = 0.5f;
+		float radius = 0.6f;
 		addPrimitive(new ShaderPrimitive(ShaderType.DEFAULT_GAME));
 		addPrimitive(new ColorPrimitive(1.0f, 1.0f, 1.0f, 1.0f));
 		m_aimRect = addPrimitive(new RectPrimitive(0.0f, 0.0f, 0.0f, 0.1f, 0.0f, true));
 		m_aimRect.setVisible(false);
-		m_rect = addPrimitive(new CirclePrimitive(x, y, radius, 0.0f));
+		m_circle = addPrimitive(new CirclePrimitive(x, y, radius, 0.0f));
 		
 		addPrimitive(new ShaderPrimitive(ShaderType.FONT));
 		addPrimitive(new ColorPrimitive(0.0f, 0.0f, 0.0f, 1.0f));
@@ -94,8 +94,8 @@ public class PlayerEntityGolf extends GameEntity {
 		m_aimRect.setRotation((float) Math.toDegrees(m_aimAngle));
 		m_aimRect.getPosition().set(newPos);
 		
-		m_rect.getPosition().set(m_body.getPosition());
-		m_rect.setRotation(m_body.getRotation());
+		m_circle.getPosition().set(m_body.getPosition());
+		m_circle.setRotation(m_body.getRotation());
 		
 		m_text.getPosition().set(m_body.getPosition());
 		m_text.setRotation(m_body.getRotation());
