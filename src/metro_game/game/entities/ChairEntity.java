@@ -8,7 +8,7 @@ import metro_game.render.primitives.RectPrimitive;
 import metro_game.render.primitives.ShaderPrimitive;
 import metro_game.render.primitives.ShaderPrimitive.ShaderType;
 
-public class ChairEntity extends GameEntity {
+public class ChairEntity extends PhysicsEntity {
 	private RectPrimitive m_rect;
 	private Body m_body;
 	
@@ -18,6 +18,9 @@ public class ChairEntity extends GameEntity {
 		addPrimitive(new ColorPrimitive(1.0f, 0.0f, 0.0f, 1.0f));
 		m_rect = addPrimitive(new RectPrimitive(x, y, 1.5f, 1.5f, 0.0f, true));
 		m_body = addBody(new BoxBody(false, x, y, 1.5f, 1.5f));
+	}
+	
+	public void setOccupiedBy(PhysicsEntity physicsEntity) {
 	}
 	
 	@Override

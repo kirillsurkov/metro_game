@@ -3,12 +3,13 @@ package metro_game.game.entities;
 import metro_game.Context;
 import metro_game.game.physics.bodies.Body;
 import metro_game.game.physics.bodies.BoxBody;
+import metro_game.game.physics.bodies.modifiers.BodyModifierPosition;
 import metro_game.render.primitives.ColorPrimitive;
 import metro_game.render.primitives.RectPrimitive;
 import metro_game.render.primitives.ShaderPrimitive;
 import metro_game.render.primitives.ShaderPrimitive.ShaderType;
 
-public class DoorEntity extends GameEntity {
+public class DoorEntity extends PhysicsEntity {
 	private boolean m_opened;
 	private boolean m_processing;
 	private float m_timer;
@@ -81,8 +82,8 @@ public class DoorEntity extends GameEntity {
 				m_timer = m_timeout;
 			}
 			float mul = 2.0f * (m_opened ? m_timer : (1 - m_timer)) / m_timeout;
-			m_body_top.getPosition().y = m_origin_top + 0.25f * m_width * mul;
-			m_body_bottom.getPosition().y = m_origin_bottom - 0.25f * m_width * mul;
+			m_body_top.pushModifier(new BodyModifierPosition(m_body_top.getPosition().x, m_origin_top + 0.25f * m_width * mul));
+			m_body_bottom.pushModifier(new BodyModifierPosition(m_body_bottom.getPosition().x, m_origin_bottom - 0.25f * m_width * mul));
 		}
 	}
 }

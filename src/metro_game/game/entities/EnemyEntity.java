@@ -8,7 +8,7 @@ import metro_game.render.primitives.ColorPrimitive;
 import metro_game.render.primitives.ShaderPrimitive;
 import metro_game.render.primitives.ShaderPrimitive.ShaderType;
 
-public class EnemyEntity extends GameEntity {
+public class EnemyEntity extends PhysicsEntity {
 	private CirclePrimitive m_circle;
 	private Body m_body;
 	

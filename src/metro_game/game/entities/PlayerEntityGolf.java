@@ -6,6 +6,9 @@ import metro_game.Context;
 import metro_game.game.events.CameraEvent;
 import metro_game.game.physics.bodies.Body;
 import metro_game.game.physics.bodies.CircleBody;
+import metro_game.game.physics.bodies.modifiers.BodyModifierAngularVelocity;
+import metro_game.game.physics.bodies.modifiers.BodyModifierLinearVelocity;
+import metro_game.game.physics.bodies.modifiers.BodyModifierRotation;
 import metro_game.render.primitives.CirclePrimitive;
 import metro_game.render.primitives.ColorPrimitive;
 import metro_game.render.primitives.RectPrimitive;
@@ -15,7 +18,7 @@ import metro_game.render.primitives.ShaderPrimitive.ShaderType;
 import metro_game.ui.events.UIEvent;
 import metro_game.ui.events.MouseButtonEvent;
 
-public class PlayerEntityGolf extends GameEntity {
+public class PlayerEntityGolf extends PhysicsEntity {
 	private Body m_body;
 	private Vector2f m_clickPos;
 	private CirclePrimitive m_circle;
@@ -40,7 +43,7 @@ public class PlayerEntityGolf extends GameEntity {
 		m_text = addPrimitive(new TextPrimitive("X", false, 32, 0.0f, x, y, 0.0f, TextPrimitive.AlignmentX.CENTER, TextPrimitive.AlignmentY.CENTER));
 		
 		m_body = addBody(new CircleBody(true, x, y, 0.0f, 0.0f, 0.0f, 0.0f, radius));
-		m_body.setRotation(30);
+		m_body.pushModifier(new BodyModifierRotation(30));
 		m_clickPos = null;
 		m_aimShapeLength = 5.0f;
 		m_aimAngle = 0;
@@ -50,11 +53,9 @@ public class PlayerEntityGolf extends GameEntity {
 	
 	@Override
 	public void onCollideStart(GameEntity gameEntity) {
-		if (gameEntity instanceof DummyBoxEntity) {
-			DummyBoxEntity entity = (DummyBoxEntity) gameEntity;
-			if (entity.isFragile()) {
-				entity.setNeedRemove(true);
-			}
+		if (gameEntity instanceof ChairEntity) {
+			ChairEntity chair = (ChairEntity) gameEntity;
+			chair.setOccupiedBy(this);
 		}
 	}
 	
@@ -66,8 +67,9 @@ public class PlayerEntityGolf extends GameEntity {
 			if (uiEvent.getType() == UIEvent.Type.MOUSE_BUTTON) {
 				MouseButtonEvent event = (MouseButtonEvent) uiEvent;
 				if (event.isUp()) {
-					Vector2f linearVelocity = new Vector2f((float) Math.cos(m_aimAngle), (float) Math.sin(m_aimAngle)).mul(-m_aimPower * m_aimPowerMax);
-					m_body.getLinearVelocity().set(linearVelocity);
+					float velocityX = (float) -Math.cos(m_aimAngle) * m_aimPower * m_aimPowerMax;
+					float velocityY = (float) -Math.sin(m_aimAngle) * m_aimPower * m_aimPowerMax;
+					m_body.pushModifier(new BodyModifierLinearVelocity(velocityX, velocityY));
 					m_aimRect.setVisible(false);
 					m_clickPos = null;
 					m_aimPower = 0;
@@ -75,7 +77,7 @@ public class PlayerEntityGolf extends GameEntity {
 					if (m_clickPos == null) {
 						m_aimRect.setVisible(true);
 						m_clickPos = new Vector2f(aspect * m_context.getMouseX(), m_context.getMouseY());
-						m_body.setAngularVelocity(0.0f);
+						m_body.pushModifier(new BodyModifierAngularVelocity(0.0f));
 					}
 				}
 			}
@@ -85,7 +87,7 @@ public class PlayerEntityGolf extends GameEntity {
 			Vector2f angleVector = new Vector2f(aspect * m_context.getMouseX(), m_context.getMouseY()).sub(m_clickPos);
 			m_aimAngle = new Vector2f(1.0f, 0.0f).angle(angleVector);
 			m_aimPower = Math.min(angleVector.length() * 20.0f, m_aimPowerMax) / m_aimPowerMax;
-			m_body.setRotation((float) Math.toDegrees(m_aimAngle));
+			m_body.pushModifier(new BodyModifierRotation((float) Math.toDegrees(m_aimAngle)));
 		}
 
 		float aimLength = m_aimPower * m_aimShapeLength;

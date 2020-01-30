@@ -1,6 +1,7 @@
 package metro_game.game.entities;
 
 import metro_game.game.physics.bodies.BoxBody;
+import metro_game.game.physics.bodies.modifiers.BodyModifierRotation;
 import metro_game.render.primitives.ColorPrimitive;
 import metro_game.render.primitives.RectPrimitive;
 import metro_game.render.primitives.ShaderPrimitive;
@@ -9,7 +10,7 @@ import metro_game.render.primitives.ShaderPrimitive.ShaderType;
 import metro_game.Context;
 import metro_game.game.physics.bodies.Body;
 
-public class DummyBoxEntity extends GameEntity {
+public class DummyBoxEntity extends PhysicsEntity {
 	private boolean m_fragile;
 	private RectPrimitive m_rect;
 	private TextPrimitive m_text;
@@ -27,7 +28,7 @@ public class DummyBoxEntity extends GameEntity {
 		m_text = addPrimitive(new TextPrimitive("TEST", false, 48, 0.0f, x, y, 0.0f, TextPrimitive.AlignmentX.CENTER, TextPrimitive.AlignmentY.CENTER));
 		
 		m_body = addBody(new BoxBody(dynamic, x, y, width, height));
-		m_body.setRotation(rotation);
+		m_body.pushModifier(new BodyModifierRotation(rotation));
 	}
 	
 	public boolean isFragile() {

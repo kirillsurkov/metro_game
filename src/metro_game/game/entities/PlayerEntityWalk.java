@@ -6,6 +6,8 @@ import metro_game.Context;
 import metro_game.game.events.CameraEvent;
 import metro_game.game.physics.bodies.Body;
 import metro_game.game.physics.bodies.BoxBody;
+import metro_game.game.physics.bodies.modifiers.BodyModifierLinearVelocity;
+import metro_game.game.physics.bodies.modifiers.BodyModifierRotation;
 import metro_game.render.primitives.ColorPrimitive;
 import metro_game.render.primitives.RectPrimitive;
 import metro_game.render.primitives.ShaderPrimitive;
@@ -13,7 +15,7 @@ import metro_game.render.primitives.ShaderPrimitive.ShaderType;
 import metro_game.ui.events.MouseButtonEvent;
 import metro_game.ui.events.UIEvent;
 
-public class PlayerEntityWalk extends GameEntity {
+public class PlayerEntityWalk extends PhysicsEntity {
 	private RectPrimitive m_rect;
 	private Body m_body;
 	private Vector2f m_clickPos;
@@ -54,8 +56,8 @@ public class PlayerEntityWalk extends GameEntity {
 			}
 		}
 		
-		m_body.getLinearVelocity().set(m_aimVector);
-		m_body.setRotation((float) Math.toDegrees(new Vector2f(1.0f, 0.0f).angle(m_aimVector)));
+		m_body.pushModifier(new BodyModifierLinearVelocity(m_aimVector.x, m_aimVector.y));
+		m_body.pushModifier(new BodyModifierRotation((float) Math.toDegrees(new Vector2f(1.0f, 0.0f).angle(m_aimVector))));
 		
 		m_rect.getPosition().set(m_body.getPosition());
 		m_rect.setRotation(m_body.getRotation());

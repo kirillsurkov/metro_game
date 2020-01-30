@@ -3,6 +3,7 @@ package metro_game.game;
 import java.util.Stack;
 
 import metro_game.Context;
+import metro_game.game.entities.PhysicsEntity;
 import metro_game.game.events.CameraEvent;
 import metro_game.game.events.DestroyEntityEvent;
 import metro_game.game.events.GameEvent;
@@ -92,7 +93,11 @@ public class Game {
 			}
 			case NEW_BODY: {
 				NewBodyEvent event = (NewBodyEvent) gameEvent;
-				m_physics.addBody(event.getOwner(), event.getBody());
+				if (event.getOwner() instanceof PhysicsEntity) {
+					m_physics.addBody((PhysicsEntity) event.getOwner(), event.getBody());
+				} else {
+					System.out.println("Non-physics entity cannot own bodies");
+				}
 				break;
 			}
 			case CAMERA: {
@@ -102,7 +107,9 @@ public class Game {
 			}
 			case DESTROY_ENTITY: {
 				DestroyEntityEvent event = (DestroyEntityEvent) gameEvent;
-				m_physics.destroyBodies(event.getEntity());
+				if (event.getEntity() instanceof PhysicsEntity) {
+					m_physics.destroyBodies((PhysicsEntity) event.getEntity());
+				}
 				break;
 			}
 			}

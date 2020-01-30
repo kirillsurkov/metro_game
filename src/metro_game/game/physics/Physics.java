@@ -7,21 +7,21 @@ import java.util.Map;
 import java.util.Stack;
 
 import metro_game.Context;
-import metro_game.game.entities.GameEntity;
+import metro_game.game.entities.PhysicsEntity;
 import metro_game.game.physics.bodies.Body;
 import metro_game.game.scenes.Scene;
 
 public class Physics {
 	public class OwnerBodyPair {
-		private GameEntity m_owner;
+		private PhysicsEntity m_owner;
 		private Body m_body;
 		
-		public OwnerBodyPair(GameEntity owner, Body body) {
+		public OwnerBodyPair(PhysicsEntity owner, Body body) {
 			m_owner = owner;
 			m_body = body;
 		}
 		
-		public GameEntity getOwner() {
+		public PhysicsEntity getOwner() {
 			return m_owner;
 		}
 		
@@ -51,13 +51,13 @@ public class Physics {
 		}
 	}
 	
-	public void addBody(GameEntity owner, Body body) {
+	public void addBody(PhysicsEntity owner, Body body) {
 		OwnerBodyPair pair = new OwnerBodyPair(owner, body);
 		getBodies().add(pair);
 		m_engine.addBody(pair);
 	}
 	
-	public void destroyBodies(GameEntity owner) {
+	public void destroyBodies(PhysicsEntity owner) {
 		Stack<Integer> toRemove = new Stack<Integer>();
 		List<OwnerBodyPair> bodies = getBodies();
 		for (int i = 0; i < bodies.size(); i++) {

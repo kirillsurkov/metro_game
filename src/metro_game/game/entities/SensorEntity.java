@@ -3,12 +3,13 @@ package metro_game.game.entities;
 import metro_game.Context;
 import metro_game.game.physics.bodies.Body;
 import metro_game.game.physics.bodies.BoxBody;
+import metro_game.game.physics.bodies.modifiers.BodyModifierSensor;
 import metro_game.render.primitives.ColorPrimitive;
 import metro_game.render.primitives.RectPrimitive;
 import metro_game.render.primitives.ShaderPrimitive;
 import metro_game.render.primitives.ShaderPrimitive.ShaderType;
 
-public class SensorEntity extends GameEntity {
+public class SensorEntity extends PhysicsEntity {
 	protected boolean m_active;
 	protected ColorPrimitive m_color;
 	private RectPrimitive m_rect;
@@ -22,7 +23,7 @@ public class SensorEntity extends GameEntity {
 		m_color = addPrimitive(new ColorPrimitive(1.0f, 0.0f, 0.0f, 1.0f));
 		m_rect = addPrimitive(new RectPrimitive(x, y, width, height, 0.0f, true));
 		m_body = addBody(new BoxBody(false, x, y, width, height));
-		m_body.setSensor(true);
+		m_body.pushModifier(new BodyModifierSensor(true));
 	}
 	
 	@Override

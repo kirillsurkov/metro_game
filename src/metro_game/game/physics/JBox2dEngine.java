@@ -21,10 +21,16 @@ import org.jbox2d.dynamics.World;
 import org.jbox2d.dynamics.contacts.Contact;
 import org.joml.Vector2f;
 
-import metro_game.game.entities.GameEntity;
+import metro_game.game.entities.PhysicsEntity;
 import metro_game.game.physics.Physics.OwnerBodyPair;
 import metro_game.game.physics.bodies.BoxBody;
 import metro_game.game.physics.bodies.CircleBody;
+import metro_game.game.physics.bodies.modifiers.BodyModifier;
+import metro_game.game.physics.bodies.modifiers.BodyModifierAngularVelocity;
+import metro_game.game.physics.bodies.modifiers.BodyModifierLinearVelocity;
+import metro_game.game.physics.bodies.modifiers.BodyModifierPosition;
+import metro_game.game.physics.bodies.modifiers.BodyModifierRotation;
+import metro_game.game.physics.bodies.modifiers.BodyModifierSensor;
 
 public class JBox2dEngine implements Engine, ContactListener {
 	private World m_world;
@@ -112,15 +118,39 @@ public class JBox2dEngine implements Engine, ContactListener {
 	@Override
 	public void update(double delta) {
 		for (Map.Entry<Body, OwnerBodyPair> entry : m_bodies.entrySet()) {
-			metro_game.game.physics.bodies.Body src = entry.getValue().getBody();
 			Body dst = entry.getKey();
 			
-			Vector2f position = src.getPosition();
-			Vector2f linearVelocity = src.getLinearVelocity();
-			
-			dst.setTransform(new Vec2(position.x, position.y), (float) Math.toRadians(src.getRotation()));
-			dst.setLinearVelocity(new Vec2(linearVelocity.x, linearVelocity.y));
-			dst.setAngularVelocity(src.getAngularVelocity());
+			for (BodyModifier bodyModifier : entry.getValue().getBody().getModifiers()) {
+				switch (bodyModifier.getType()) {
+				case SENSOR: {
+					BodyModifierSensor modifier = (BodyModifierSensor) bodyModifier;
+					dst.getFixtureList().setSensor(modifier.isSensor());
+					break;
+				}
+				case POSITION: {
+					BodyModifierPosition modifier = (BodyModifierPosition) bodyModifier;
+					dst.setTransform(new Vec2(modifier.getX(), modifier.getY()), dst.getAngle());
+					break;
+				}
+				case LINEAR_VELOCITY: {
+					BodyModifierLinearVelocity modifier = (BodyModifierLinearVelocity) bodyModifier;
+					System.out.println("LINVEL: " + modifier.getVelocityX() + " " + modifier.getVelocityY());
+					dst.setLinearVelocity(new Vec2(modifier.getVelocityX(), modifier.getVelocityY()));
+					break;
+				}
+				case ROTATION: {
+					BodyModifierRotation modifier = (BodyModifierRotation) bodyModifier;
+					dst.setTransform(dst.getPosition(), (float) Math.toRadians(modifier.getRotation()));
+					break;
+				}
+				case ANGULAR_VELOCITY: {
+					BodyModifierAngularVelocity modifier = (BodyModifierAngularVelocity) bodyModifier;
+					dst.setAngularVelocity(modifier.getAngularVelocity());
+					break;
+				}
+				}
+			}
+			entry.getValue().getBody().clearModifiers();
 		}
 		m_world.step((float) delta, 8, 3);
 		for (Map.Entry<Body, OwnerBodyPair> entry : m_bodies.entrySet()) {
@@ -134,17 +164,18 @@ public class JBox2dEngine implements Engine, ContactListener {
 			dst.getLinearVelocity().set(linearVelocity.x, linearVelocity.y);
 			dst.setRotation((float) Math.toDegrees(src.getAngle()));
 			dst.setAngularVelocity(src.getAngularVelocity());
+			dst.setSensor(src.getFixtureList().isSensor());
 		}
 		for (Contact contact : m_contactsStart) {
-			GameEntity entity1 = m_bodies.get(contact.getFixtureA().getBody()).getOwner();
-			GameEntity entity2 = m_bodies.get(contact.getFixtureB().getBody()).getOwner();
+			PhysicsEntity entity1 = m_bodies.get(contact.getFixtureA().getBody()).getOwner();
+			PhysicsEntity entity2 = m_bodies.get(contact.getFixtureB().getBody()).getOwner();
 			entity1.onCollideStart(entity2);
 			entity2.onCollideStart(entity1);
 		}
 		m_contactsStart.clear();
 		for (Contact contact : m_contactsEnd) {
-			GameEntity entity1 = m_bodies.get(contact.getFixtureA().getBody()).getOwner();
-			GameEntity entity2 = m_bodies.get(contact.getFixtureB().getBody()).getOwner();
+			PhysicsEntity entity1 = m_bodies.get(contact.getFixtureA().getBody()).getOwner();
+			PhysicsEntity entity2 = m_bodies.get(contact.getFixtureB().getBody()).getOwner();
 			entity1.onCollideEnd(entity2);
 			entity2.onCollideEnd(entity1);
 		}
