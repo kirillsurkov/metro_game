@@ -19,6 +19,12 @@ public class Main {
 		Game game = new Game(context, physics);
 		Window window = new Window(context);
 		Renderer renderer = new Renderer(context, game);
+		FramesCounter framesCounter = new FramesCounter(5.0) {
+			@Override
+			public void onFPS(int frames, double timer) {
+				System.out.println("FPS: " + (frames / timer));
+			}
+		};
 		
 		long lastFrame = System.nanoTime();
 		while (window.isAlive()) {
@@ -35,6 +41,8 @@ public class Main {
 			}
 			
 			renderer.draw();
+			
+			framesCounter.step(delta);
 			
 			window.swapBuffers();
 		}
