@@ -25,7 +25,7 @@ public class EnemyEntity extends PhysicsEntity {
 	
 	@Override
 	public void update(double delta) {
-		m_circle.getPosition().set(m_body.getPositionX(), m_body.getPositionY());
+		m_circle.setPosition(m_body.getPositionX(), m_body.getPositionY());
 		m_circle.setRotation(m_body.getRotation());
 	}
 }

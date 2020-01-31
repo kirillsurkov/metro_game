@@ -36,10 +36,10 @@ public class DummyBoxEntity extends PhysicsEntity {
 	
 	@Override
 	public void update(double delta) {
-		m_rect.getPosition().set(m_body.getPositionX(), m_body.getPositionY());
+		m_rect.setPosition(m_body.getPositionX(), m_body.getPositionY());
 		m_rect.setRotation(m_body.getRotation());
 		
-		m_text.getPosition().set(m_body.getPositionX(), m_body.getPositionY());
+		m_text.setPosition(m_body.getPositionX(), m_body.getPositionY());
 		m_text.setRotation(m_body.getRotation());
 	}
 }

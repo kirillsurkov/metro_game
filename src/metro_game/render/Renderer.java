@@ -144,23 +144,22 @@ public class Renderer {
 		}
 		case RECT: {
 			RectPrimitive rect = (RectPrimitive) primitive;
-			Vector2f position = rect.getPosition();
-			Vector2f size = rect.getSize();
-			model.translate(position.x, position.y, 0.0f);
+			float sizeX = rect.getSizeX();
+			float sizeY = rect.getSizeY();
+			model.translate(rect.getPositionX(), rect.getPositionY(), 0.0f);
 			model.rotate((float) Math.toRadians(rect.getRotation()), 0.0f, 0.0f, 1.0f);
 			if (rect.isCentered()) {
-				model.translate(-size.x / 2.0f, -size.y / 2.0f, 0.0f);
+				model.translate(-sizeX / 2.0f, -sizeY / 2.0f, 0.0f);
 			}
 			GL30.glEnable(GL30.GL_MULTISAMPLE);
-			drawRect(size.x, size.y, new Matrix4f(viewProjection).mul(model));
+			drawRect(sizeX, sizeY, new Matrix4f(viewProjection).mul(model));
 			GL30.glDisable(GL30.GL_MULTISAMPLE);
 			break;
 		}
 		case CIRCLE: {
 			CirclePrimitive circle = (CirclePrimitive) primitive;
-			Vector2f position = circle.getPosition();
 			float radius = circle.getRadius();
-			model.translate(position.x, position.y, 0.0f);
+			model.translate(circle.getPositionX(), circle.getPositionY(), 0.0f);
 			model.rotate((float) Math.toRadians(circle.getRotation()), 0.0f, 0.0f, 1.0f);
 			GL30.glEnable(GL30.GL_MULTISAMPLE);
 			drawCircle(radius, new Matrix4f(viewProjection).mul(model));
@@ -180,8 +179,7 @@ public class Renderer {
 			if (text.isTranslated()) {
 				str = m_context.getString(str);
 			}
-			Vector2f position = text.getPosition();
-			model.translate(position.x, position.y, 0.0f);
+			model.translate(text.getPositionX(), text.getPositionY(), 0.0f);
 			model.rotate((float) Math.toRadians(text.getRotation()), 0.0f, 0.0f, 1.0f);
 			model.scale(viewWidth, viewHeight, 1.0f);
 			Font font = m_fontCache.getFont(text.getFont(), text.getFontSize());

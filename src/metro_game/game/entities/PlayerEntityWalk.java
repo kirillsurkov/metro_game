@@ -57,11 +57,10 @@ public class PlayerEntityWalk extends PhysicsEntity {
 		m_body.setLinearVelocity(m_aimVector.x, m_aimVector.y);
 		m_body.setRotation((float) Math.toDegrees(new Vector2f(1.0f, 0.0f).angle(m_aimVector)));
 		
-		m_rect.getPosition().set(m_body.getPositionX(), m_body.getPositionY());
+		m_rect.setPosition(m_body.getPositionX(), m_body.getPositionY());
 		m_rect.setRotation(m_body.getRotation());
 		
-		CameraEvent cameraEvent = new CameraEvent();
-		cameraEvent.getPosition().set(m_body.getPositionX(), m_body.getPositionY());
+		CameraEvent cameraEvent = new CameraEvent(m_body.getPositionX(), m_body.getPositionY());
 		m_context.getGameEvents().pushEvent(cameraEvent);
 	}
 }

@@ -43,7 +43,7 @@ public class SensorEntity extends PhysicsEntity {
 	
 	@Override
 	public void update(double delta) {
-		m_rect.getPosition().set(m_body.getPositionX(), m_body.getPositionY());
+		m_rect.setPosition(m_body.getPositionX(), m_body.getPositionY());
 	}
 	
 	public void onActivated() {

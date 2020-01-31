@@ -14,8 +14,17 @@ public class CirclePrimitive extends Primitive {
 		m_rotation = rotation;
 	}
 	
-	public Vector2f getPosition() {
-		return m_position;
+	public void setPosition(float x, float y) {
+		m_position.x = x;
+		m_position.y = y;
+	}
+	
+	public float getPositionX() {
+		return m_position.x;
+	}
+	
+	public float getPositionY() {
+		return m_position.y;
 	}
 	
 	public void setRadius(float radius) {

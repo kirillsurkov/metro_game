@@ -87,19 +87,18 @@ public class PlayerEntityGolf extends PhysicsEntity {
 		}
 
 		float aimLength = m_aimPower * m_aimShapeLength;
-		m_aimRect.getSize().x = aimLength;
+		m_aimRect.setSize(aimLength, m_aimRect.getSizeY());
 		Vector2f newPos = new Vector2f((float) Math.cos(m_aimAngle), (float) Math.sin(m_aimAngle)).mul(-0.5f * aimLength).add(m_body.getPositionX(), m_body.getPositionY());
 		m_aimRect.setRotation((float) Math.toDegrees(m_aimAngle));
-		m_aimRect.getPosition().set(newPos);
+		m_aimRect.setPosition(newPos.x, newPos.y);
 		
-		m_circle.getPosition().set(m_body.getPositionX(), m_body.getPositionY());
+		m_circle.setPosition(m_body.getPositionX(), m_body.getPositionY());
 		m_circle.setRotation(m_body.getRotation());
 		
-		m_text.getPosition().set(m_body.getPositionX(), m_body.getPositionY());
+		m_text.setPosition(m_body.getPositionX(), m_body.getPositionY());
 		m_text.setRotation(m_body.getRotation());
 		
-		CameraEvent cameraEvent = new CameraEvent();
-		cameraEvent.getPosition().set(m_body.getPositionX(), m_body.getPositionY());
+		CameraEvent cameraEvent = new CameraEvent(m_body.getPositionX(), m_body.getPositionY());
 		m_context.getGameEvents().pushEvent(cameraEvent);
 	}
 }

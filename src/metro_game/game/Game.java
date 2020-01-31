@@ -102,7 +102,7 @@ public class Game {
 			}
 			case CAMERA: {
 				CameraEvent event = (CameraEvent) gameEvent;
-				m_camera.move(event.getPosition());
+				m_camera.move(event.getPositionX(), event.getPositionY());
 				break;
 			}
 			case DESTROY_ENTITY: {

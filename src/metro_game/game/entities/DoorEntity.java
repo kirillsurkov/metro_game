@@ -71,8 +71,8 @@ public class DoorEntity extends PhysicsEntity {
 	
 	@Override
 	public void update(double delta) {
-		m_rect_top.getPosition().set(m_body_top.getPositionX(), m_body_top.getPositionY());
-		m_rect_bottom.getPosition().set(m_body_bottom.getPositionX(), m_body_bottom.getPositionY());
+		m_rect_top.setPosition(m_body_top.getPositionX(), m_body_top.getPositionY());
+		m_rect_bottom.setPosition(m_body_bottom.getPositionX(), m_body_bottom.getPositionY());
 		
 		if (m_processing) {
 			m_timer += delta;

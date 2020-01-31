@@ -28,7 +28,7 @@ public class WallEntity extends PhysicsEntity {
 		if (m_rotation != m_body.getRotation()) {
 			System.out.println("ERRRR");
 		}
-		m_rect.getPosition().set(m_body.getPositionX(), m_body.getPositionY());
+		m_rect.setPosition(m_body.getPositionX(), m_body.getPositionY());
 		m_rect.setRotation(m_body.getRotation());
 	}
 }

@@ -12,8 +12,8 @@ public class Camera {
 		m_newPosition = new Vector2f(x, y);
 	}
 	
-	public void move(Vector2f newPosition) {
-		m_newPosition.set(newPosition);
+	public void move(float x, float y) {
+		m_newPosition.set(x, y);
 	}
 	
 	public Vector2f getPosition() {
