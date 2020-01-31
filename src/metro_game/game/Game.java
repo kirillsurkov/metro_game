@@ -72,17 +72,6 @@ public class Game {
 			}
 		}
 
-		if (m_scenes.size() > 0) {
-			Scene scene = m_scenes.lastElement();
-			if (!scene.isPaused()) {
-				m_physics.update(delta);
-			}
-			scene.update(delta);
-			if (scene.isNeedClose()) {
-				popScene();
-			}
-		}
-		
 		m_context.getGameEvents().flush();
 		for (GameEvent gameEvent : m_context.getGameEvents().getEvents()) {
 			switch (gameEvent.getType()) {
@@ -112,6 +101,17 @@ public class Game {
 				}
 				break;
 			}
+			}
+		}
+		
+		if (m_scenes.size() > 0) {
+			Scene scene = m_scenes.lastElement();
+			if (!scene.isPaused()) {
+				m_physics.update(delta);
+			}
+			scene.update(delta);
+			if (scene.isNeedClose()) {
+				popScene();
 			}
 		}
 		
