@@ -1,7 +1,7 @@
 package metro_game.game.entities;
 
 import metro_game.Context;
-import metro_game.game.physics.bodies.Body;
+import metro_game.game.physics.bodies.Body.BodyGameInterface;
 import metro_game.game.physics.bodies.CircleBody;
 import metro_game.render.primitives.CirclePrimitive;
 import metro_game.render.primitives.ColorPrimitive;
@@ -10,7 +10,7 @@ import metro_game.render.primitives.ShaderPrimitive.ShaderType;
 
 public class EnemyEntity extends PhysicsEntity {
 	private CirclePrimitive m_circle;
-	private Body m_body;
+	private BodyGameInterface m_body;
 	
 	public EnemyEntity(Context context, float x, float y) {
 		super(context);
@@ -25,7 +25,7 @@ public class EnemyEntity extends PhysicsEntity {
 	
 	@Override
 	public void update(double delta) {
-		m_circle.getPosition().set(m_body.getPosition());
+		m_circle.getPosition().set(m_body.getPositionX(), m_body.getPositionY());
 		m_circle.setRotation(m_body.getRotation());
 	}
 }

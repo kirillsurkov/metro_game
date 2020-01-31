@@ -8,15 +8,15 @@ import java.util.Stack;
 
 import metro_game.Context;
 import metro_game.game.entities.PhysicsEntity;
-import metro_game.game.physics.bodies.Body;
+import metro_game.game.physics.bodies.Body.BodyPhysicsInterface;
 import metro_game.game.scenes.Scene;
 
 public class Physics {
 	public class OwnerBodyPair {
 		private PhysicsEntity m_owner;
-		private Body m_body;
+		private BodyPhysicsInterface m_body;
 		
-		public OwnerBodyPair(PhysicsEntity owner, Body body) {
+		public OwnerBodyPair(PhysicsEntity owner, BodyPhysicsInterface body) {
 			m_owner = owner;
 			m_body = body;
 		}
@@ -25,7 +25,7 @@ public class Physics {
 			return m_owner;
 		}
 		
-		public Body getBody() {
+		public BodyPhysicsInterface getBody() {
 			return m_body;
 		}
 	}
@@ -51,7 +51,7 @@ public class Physics {
 		}
 	}
 	
-	public void addBody(PhysicsEntity owner, Body body) {
+	public void addBody(PhysicsEntity owner, BodyPhysicsInterface body) {
 		OwnerBodyPair pair = new OwnerBodyPair(owner, body);
 		getBodies().add(pair);
 		m_engine.addBody(pair);

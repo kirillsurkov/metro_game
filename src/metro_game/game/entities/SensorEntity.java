@@ -1,9 +1,8 @@
 package metro_game.game.entities;
 
 import metro_game.Context;
-import metro_game.game.physics.bodies.Body;
 import metro_game.game.physics.bodies.BoxBody;
-import metro_game.game.physics.bodies.modifiers.BodyModifierSensor;
+import metro_game.game.physics.bodies.Body.BodyGameInterface;
 import metro_game.render.primitives.ColorPrimitive;
 import metro_game.render.primitives.RectPrimitive;
 import metro_game.render.primitives.ShaderPrimitive;
@@ -13,7 +12,7 @@ public class SensorEntity extends PhysicsEntity {
 	protected boolean m_active;
 	protected ColorPrimitive m_color;
 	private RectPrimitive m_rect;
-	private Body m_body;
+	private BodyGameInterface m_body;
 	
 	public SensorEntity(Context context, float x, float y, float width, float height) {
 		super(context);
@@ -23,7 +22,7 @@ public class SensorEntity extends PhysicsEntity {
 		m_color = addPrimitive(new ColorPrimitive(1.0f, 0.0f, 0.0f, 1.0f));
 		m_rect = addPrimitive(new RectPrimitive(x, y, width, height, 0.0f, true));
 		m_body = addBody(new BoxBody(false, x, y, width, height));
-		m_body.pushModifier(new BodyModifierSensor(true));
+		m_body.setSensor(true);
 	}
 	
 	@Override
@@ -44,7 +43,7 @@ public class SensorEntity extends PhysicsEntity {
 	
 	@Override
 	public void update(double delta) {
-		m_rect.getPosition().set(m_body.getPosition());
+		m_rect.getPosition().set(m_body.getPositionX(), m_body.getPositionY());
 	}
 	
 	public void onActivated() {

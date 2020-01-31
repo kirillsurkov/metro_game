@@ -1,8 +1,8 @@
 package metro_game.game.entities;
 
 import metro_game.Context;
-import metro_game.game.physics.bodies.Body;
 import metro_game.game.physics.bodies.BoxBody;
+import metro_game.game.physics.bodies.Body.BodyGameInterface;
 import metro_game.render.primitives.ColorPrimitive;
 import metro_game.render.primitives.RectPrimitive;
 import metro_game.render.primitives.ShaderPrimitive;
@@ -10,7 +10,7 @@ import metro_game.render.primitives.ShaderPrimitive.ShaderType;
 
 public class ChairEntity extends PhysicsEntity {
 	private RectPrimitive m_rect;
-	private Body m_body;
+	private BodyGameInterface m_body;
 	
 	public ChairEntity(Context context, float x, float y) {
 		super(context);
@@ -25,7 +25,7 @@ public class ChairEntity extends PhysicsEntity {
 	
 	@Override
 	public void update(double delta) {
-		m_rect.getPosition().set(m_body.getPosition());
+		m_rect.getPosition().set(m_body.getPositionX(), m_body.getPositionY());
 		m_rect.setRotation(m_body.getRotation());
 	}
 }

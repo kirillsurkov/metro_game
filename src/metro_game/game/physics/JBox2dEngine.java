@@ -19,12 +19,12 @@ import org.jbox2d.dynamics.BodyType;
 import org.jbox2d.dynamics.FixtureDef;
 import org.jbox2d.dynamics.World;
 import org.jbox2d.dynamics.contacts.Contact;
-import org.joml.Vector2f;
 
 import metro_game.game.entities.PhysicsEntity;
 import metro_game.game.physics.Physics.OwnerBodyPair;
 import metro_game.game.physics.bodies.BoxBody;
 import metro_game.game.physics.bodies.CircleBody;
+import metro_game.game.physics.bodies.Body.BodyPhysicsInterface;
 import metro_game.game.physics.bodies.modifiers.BodyModifier;
 import metro_game.game.physics.bodies.modifiers.BodyModifierAngularVelocity;
 import metro_game.game.physics.bodies.modifiers.BodyModifierLinearVelocity;
@@ -60,7 +60,7 @@ public class JBox2dEngine implements Engine, ContactListener {
 	
 	@Override
 	public void addBody(OwnerBodyPair pair) {
-		metro_game.game.physics.bodies.Body body = pair.getBody();
+		BodyPhysicsInterface body = pair.getBody();
 		BodyDef def = new BodyDef();
 		def.linearDamping = 0.9f;
 		def.angularDamping = 0.9f;
@@ -70,13 +70,13 @@ public class JBox2dEngine implements Engine, ContactListener {
 		
 		switch (body.getType()) {
 		case BOX: {
-			BoxBody boxBody = (BoxBody) body;
+			BoxBody boxBody = body.cast();
 			shape = new PolygonShape();
 			((PolygonShape) shape).setAsBox(boxBody.getWidth() / 2.0f, boxBody.getHeight() / 2.0f);
 			break;
 		}
 		case CIRCLE: {
-			CircleBody circleBody = (CircleBody) body;
+			CircleBody circleBody = body.cast();
 			shape = new CircleShape();
 			shape.setRadius(circleBody.getRadius());
 			break;
@@ -90,11 +90,8 @@ public class JBox2dEngine implements Engine, ContactListener {
 		fixtureDef.isSensor = body.isSensor();
 		newBody.createFixture(fixtureDef);
 		
-		Vector2f position = body.getPosition();
-		Vector2f linearVelocity = body.getLinearVelocity();
-		
-		newBody.setTransform(new Vec2(position.x, position.y), (float) Math.toRadians(body.getRotation()));
-		newBody.setLinearVelocity(new Vec2(linearVelocity.x, linearVelocity.y));
+		newBody.setTransform(new Vec2(body.getPositionX(), body.getPositionY()), (float) Math.toRadians(body.getRotation()));
+		newBody.setLinearVelocity(new Vec2(body.getLinearVelocityX(), body.getLinearVelocityY()));
 		newBody.setAngularVelocity(body.getAngularVelocity());
 		
 		m_bodies.put(newBody, pair);
@@ -134,7 +131,6 @@ public class JBox2dEngine implements Engine, ContactListener {
 				}
 				case LINEAR_VELOCITY: {
 					BodyModifierLinearVelocity modifier = (BodyModifierLinearVelocity) bodyModifier;
-					System.out.println("LINVEL: " + modifier.getVelocityX() + " " + modifier.getVelocityY());
 					dst.setLinearVelocity(new Vec2(modifier.getVelocityX(), modifier.getVelocityY()));
 					break;
 				}
@@ -155,13 +151,13 @@ public class JBox2dEngine implements Engine, ContactListener {
 		m_world.step((float) delta, 8, 3);
 		for (Map.Entry<Body, OwnerBodyPair> entry : m_bodies.entrySet()) {
 			Body src = entry.getKey();
-			metro_game.game.physics.bodies.Body dst = entry.getValue().getBody();
+			BodyPhysicsInterface dst = entry.getValue().getBody();
 			
 			Vec2 position = src.getPosition();
 			Vec2 linearVelocity = src.getLinearVelocity();
 			
-			dst.getPosition().set(position.x, position.y);
-			dst.getLinearVelocity().set(linearVelocity.x, linearVelocity.y);
+			dst.setPosition(position.x, position.y);
+			dst.setLinearVelocity(linearVelocity.x, linearVelocity.y);
 			dst.setRotation((float) Math.toDegrees(src.getAngle()));
 			dst.setAngularVelocity(src.getAngularVelocity());
 			dst.setSensor(src.getFixtureList().isSensor());

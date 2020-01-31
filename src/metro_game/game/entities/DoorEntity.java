@@ -1,9 +1,8 @@
 package metro_game.game.entities;
 
 import metro_game.Context;
-import metro_game.game.physics.bodies.Body;
 import metro_game.game.physics.bodies.BoxBody;
-import metro_game.game.physics.bodies.modifiers.BodyModifierPosition;
+import metro_game.game.physics.bodies.Body.BodyGameInterface;
 import metro_game.render.primitives.ColorPrimitive;
 import metro_game.render.primitives.RectPrimitive;
 import metro_game.render.primitives.ShaderPrimitive;
@@ -16,8 +15,8 @@ public class DoorEntity extends PhysicsEntity {
 	private float m_timeout;
 	private RectPrimitive m_rect_top;
 	private RectPrimitive m_rect_bottom;
-	private Body m_body_top;
-	private Body m_body_bottom;
+	private BodyGameInterface m_body_top;
+	private BodyGameInterface m_body_bottom;
 	private float m_width;
 	private float m_origin_top;
 	private float m_origin_bottom;
@@ -72,8 +71,8 @@ public class DoorEntity extends PhysicsEntity {
 	
 	@Override
 	public void update(double delta) {
-		m_rect_top.getPosition().set(m_body_top.getPosition());
-		m_rect_bottom.getPosition().set(m_body_bottom.getPosition());
+		m_rect_top.getPosition().set(m_body_top.getPositionX(), m_body_top.getPositionY());
+		m_rect_bottom.getPosition().set(m_body_bottom.getPositionX(), m_body_bottom.getPositionY());
 		
 		if (m_processing) {
 			m_timer += delta;
@@ -82,8 +81,8 @@ public class DoorEntity extends PhysicsEntity {
 				m_timer = m_timeout;
 			}
 			float mul = 2.0f * (m_opened ? m_timer : (1 - m_timer)) / m_timeout;
-			m_body_top.pushModifier(new BodyModifierPosition(m_body_top.getPosition().x, m_origin_top + 0.25f * m_width * mul));
-			m_body_bottom.pushModifier(new BodyModifierPosition(m_body_bottom.getPosition().x, m_origin_bottom - 0.25f * m_width * mul));
+			m_body_top.setPosition(m_body_top.getPositionX(), m_origin_top + 0.25f * m_width * mul);
+			m_body_bottom.setPosition(m_body_bottom.getPositionX(), m_origin_bottom - 0.25f * m_width * mul);
 		}
 	}
 }

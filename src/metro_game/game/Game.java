@@ -74,10 +74,10 @@ public class Game {
 
 		if (m_scenes.size() > 0) {
 			Scene scene = m_scenes.lastElement();
-			scene.update(delta);
 			if (!scene.isPaused()) {
 				m_physics.update(delta);
 			}
+			scene.update(delta);
 			if (scene.isNeedClose()) {
 				popScene();
 			}
@@ -94,7 +94,7 @@ public class Game {
 			case NEW_BODY: {
 				NewBodyEvent event = (NewBodyEvent) gameEvent;
 				if (event.getOwner() instanceof PhysicsEntity) {
-					m_physics.addBody((PhysicsEntity) event.getOwner(), event.getBody());
+					m_physics.addBody((PhysicsEntity) event.getOwner(), event.getBody().getPhysicsInterface());
 				} else {
 					System.out.println("Non-physics entity cannot own bodies");
 				}

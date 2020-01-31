@@ -4,10 +4,8 @@ import org.joml.Vector2f;
 
 import metro_game.Context;
 import metro_game.game.events.CameraEvent;
-import metro_game.game.physics.bodies.Body;
 import metro_game.game.physics.bodies.BoxBody;
-import metro_game.game.physics.bodies.modifiers.BodyModifierLinearVelocity;
-import metro_game.game.physics.bodies.modifiers.BodyModifierRotation;
+import metro_game.game.physics.bodies.Body.BodyGameInterface;
 import metro_game.render.primitives.ColorPrimitive;
 import metro_game.render.primitives.RectPrimitive;
 import metro_game.render.primitives.ShaderPrimitive;
@@ -17,7 +15,7 @@ import metro_game.ui.events.UIEvent;
 
 public class PlayerEntityWalk extends PhysicsEntity {
 	private RectPrimitive m_rect;
-	private Body m_body;
+	private BodyGameInterface m_body;
 	private Vector2f m_clickPos;
 	private Vector2f m_aimVector;
 	
@@ -56,14 +54,14 @@ public class PlayerEntityWalk extends PhysicsEntity {
 			}
 		}
 		
-		m_body.pushModifier(new BodyModifierLinearVelocity(m_aimVector.x, m_aimVector.y));
-		m_body.pushModifier(new BodyModifierRotation((float) Math.toDegrees(new Vector2f(1.0f, 0.0f).angle(m_aimVector))));
+		m_body.setLinearVelocity(m_aimVector.x, m_aimVector.y);
+		m_body.setRotation((float) Math.toDegrees(new Vector2f(1.0f, 0.0f).angle(m_aimVector)));
 		
-		m_rect.getPosition().set(m_body.getPosition());
+		m_rect.getPosition().set(m_body.getPositionX(), m_body.getPositionY());
 		m_rect.setRotation(m_body.getRotation());
 		
 		CameraEvent cameraEvent = new CameraEvent();
-		cameraEvent.getPosition().set(m_body.getPosition());
+		cameraEvent.getPosition().set(m_body.getPositionX(), m_body.getPositionY());
 		m_context.getGameEvents().pushEvent(cameraEvent);
 	}
 }
