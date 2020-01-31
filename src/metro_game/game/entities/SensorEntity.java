@@ -26,16 +26,16 @@ public class SensorEntity extends PhysicsEntity {
 	}
 	
 	@Override
-	public void onCollideStart(GameEntity gameEntity) {
-		if (gameEntity instanceof PlayerEntityGolf) {
+	public void onCollideStart(PhysicsEntity physicsEntity) {
+		if (physicsEntity instanceof PlayerEntityGolf) {
 			m_active = true;
 			onActivated();
 		}
 	}
 	
 	@Override
-	public void onCollideEnd(GameEntity gameEntity) {
-		if (gameEntity instanceof PlayerEntityGolf) {
+	public void onCollideEnd(PhysicsEntity physicsEntity) {
+		if (physicsEntity instanceof PlayerEntityGolf) {
 			m_active = false;
 			onDeactivated();
 		}

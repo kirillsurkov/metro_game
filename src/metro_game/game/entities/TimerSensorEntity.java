@@ -14,8 +14,8 @@ public class TimerSensorEntity extends SensorEntity {
 	}
 	
 	@Override
-	public void onCollideStart(GameEntity gameEntity) {
-		if (gameEntity instanceof PlayerEntityGolf) {
+	public void onCollideStart(PhysicsEntity physicsEntity) {
+		if (physicsEntity instanceof PlayerEntityGolf) {
 			m_active = true;
 			m_timer = 0.0f;
 			m_color.set(0.5f, 0.0f, 0.0f, 1.0f);
@@ -23,8 +23,8 @@ public class TimerSensorEntity extends SensorEntity {
 	}
 	
 	@Override
-	public void onCollideEnd(GameEntity gameEntity) {
-		super.onCollideEnd(gameEntity);
+	public void onCollideEnd(PhysicsEntity physicsEntity) {
+		super.onCollideEnd(physicsEntity);
 	}
 	
 	@Override

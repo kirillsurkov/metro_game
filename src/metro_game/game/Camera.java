@@ -29,7 +29,7 @@ public class Camera {
 			m_posImmediately = false;
 			m_position.set(m_newPosition);
 		} else {
-			m_position.add(new Vector2f(m_newPosition).sub(m_position).mul((float) delta * 20));
+			m_position.add(new Vector2f(m_newPosition).sub(m_position).mul((float) delta * 10));
 		}
 	}
 }

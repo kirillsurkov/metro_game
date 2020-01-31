@@ -3,6 +3,7 @@ package metro_game.game.entities;
 import org.joml.Vector2f;
 
 import metro_game.Context;
+import metro_game.game.entities.ChairEntity.ChairOccupier;
 import metro_game.game.events.CameraEvent;
 import metro_game.game.physics.bodies.CircleBody;
 import metro_game.game.physics.bodies.Body.BodyGameInterface;
@@ -15,7 +16,7 @@ import metro_game.render.primitives.ShaderPrimitive.ShaderType;
 import metro_game.ui.events.UIEvent;
 import metro_game.ui.events.MouseButtonEvent;
 
-public class PlayerEntityGolf extends PhysicsEntity {
+public class PlayerEntityGolf extends PhysicsEntity implements ChairOccupier {
 	private BodyGameInterface m_body;
 	private Vector2f m_clickPos;
 	private CirclePrimitive m_circle;
@@ -45,14 +46,6 @@ public class PlayerEntityGolf extends PhysicsEntity {
 		m_aimAngle = 0;
 		m_aimPower = 0;
 		m_aimPowerMax = 10.0f;
-	}
-	
-	@Override
-	public void onCollideStart(GameEntity gameEntity) {
-		if (gameEntity instanceof ChairEntity) {
-			ChairEntity chair = (ChairEntity) gameEntity;
-			chair.setOccupiedBy(this);
-		}
 	}
 	
 	@Override
@@ -100,5 +93,13 @@ public class PlayerEntityGolf extends PhysicsEntity {
 		
 		CameraEvent cameraEvent = new CameraEvent(m_body.getPositionX(), m_body.getPositionY());
 		m_context.getGameEvents().pushEvent(cameraEvent);
+	}
+	
+	@Override
+	public void stickToChair(float chairX, float chairY) {
+		m_body.setPosition(chairX, chairY);
+		m_body.setLinearVelocity(0.0f, 0.0f);
+		m_body.setRotation(0.0f);
+		m_body.setAngularVelocity(0.0f);
 	}
 }

@@ -190,6 +190,11 @@ public class JBox2dEngine implements Engine, ContactListener {
 	
 	@Override
 	public void preSolve(Contact contact, Manifold manifold) {
+		PhysicsEntity entity1 = m_bodies.get(contact.getFixtureA().getBody()).getOwner();
+		PhysicsEntity entity2 = m_bodies.get(contact.getFixtureB().getBody()).getOwner();
+		if (!entity1.isNeedCollide(entity2) || !entity2.isNeedCollide(entity1)) {
+			contact.setEnabled(false);
+		}
 	}
 
 	@Override

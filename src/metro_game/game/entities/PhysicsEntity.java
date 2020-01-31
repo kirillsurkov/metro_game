@@ -10,10 +10,14 @@ public class PhysicsEntity extends GameEntity {
 		super(context);
 	}
 	
-	public void onCollideStart(GameEntity gameEntity) {
+	public void onCollideStart(PhysicsEntity physicsEntity) {
 	}
 	
-	public void onCollideEnd(GameEntity gameEntity) {
+	public void onCollideEnd(PhysicsEntity physicsEntity) {
+	}
+	
+	public boolean isNeedCollide(PhysicsEntity physicsEntity) {
+		return true;
 	}
 	
 	public <T extends Body> BodyGameInterface addBody(T body) {
