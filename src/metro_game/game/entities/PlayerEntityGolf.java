@@ -38,7 +38,7 @@ public class PlayerEntityGolf extends PhysicsEntity implements ChairOccupier {
 		
 		addPrimitive(new ShaderPrimitive(ShaderType.FONT));
 		addPrimitive(new ColorPrimitive(0.0f, 0.0f, 0.0f, 1.0f));
-		m_text = addPrimitive(new TextPrimitive("X", false, 32, 0.0f, x, y, 0.0f, TextPrimitive.AlignmentX.CENTER, TextPrimitive.AlignmentY.CENTER));
+		m_text = addPrimitive(new TextPrimitive("P", false, 32, 0.0f, x, y, 0.0f, TextPrimitive.AlignmentX.CENTER, TextPrimitive.AlignmentY.CENTER));
 		
 		m_body = addBody(new CircleBody(true, x, y, 0.0f, 0.0f, 30.0f, 0.0f, radius));
 		m_clickPos = null;

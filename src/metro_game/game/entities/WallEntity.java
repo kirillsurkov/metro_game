@@ -26,7 +26,7 @@ public class WallEntity extends PhysicsEntity {
 	@Override
 	public void update(double delta) {
 		if (m_rotation != m_body.getRotation()) {
-			System.out.println("ERRRR");
+			System.out.println("ERRRR " + m_rotation + " != " + m_body.getRotation());
 		}
 		m_rect.setPosition(m_body.getPositionX(), m_body.getPositionY());
 		m_rect.setRotation(m_body.getRotation());

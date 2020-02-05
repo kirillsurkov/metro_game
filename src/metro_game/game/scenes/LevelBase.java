@@ -3,7 +3,6 @@ package metro_game.game.scenes;
 import metro_game.Context;
 import metro_game.game.entities.ChairEntity;
 import metro_game.game.entities.DoorEntity;
-import metro_game.game.entities.PlayerEntityGolf;
 import metro_game.game.entities.TimerSensorEntity;
 import metro_game.game.entities.WallEntity;
 import metro_game.ui.widgets.AlertWidget;
@@ -107,6 +106,5 @@ public class LevelBase extends Scene {
 	public void init() {
 		createCarriage();
 		createCrowd();
-		addGameEntity(new PlayerEntityGolf(m_context, 0.0f, 0.0f));
 	}
 }
