@@ -7,6 +7,7 @@ import org.joml.Vector2f;
 
 import metro_game.game.physics.bodies.modifiers.BodyModifier;
 import metro_game.game.physics.bodies.modifiers.BodyModifierAngularVelocity;
+import metro_game.game.physics.bodies.modifiers.BodyModifierLinearImpulse;
 import metro_game.game.physics.bodies.modifiers.BodyModifierLinearVelocity;
 import metro_game.game.physics.bodies.modifiers.BodyModifierPosition;
 import metro_game.game.physics.bodies.modifiers.BodyModifierRotation;
@@ -132,6 +133,10 @@ public class Body {
 		
 		public void setPosition(float x, float y) {
 			pushModifier(new BodyModifierPosition(x, y));
+		}
+		
+		public void applyLinearImpulse(float impulseX, float impulseY) {
+			pushModifier(new BodyModifierLinearImpulse(impulseX, impulseY));
 		}
 		
 		public void setLinearVelocity(float vx, float vy) {

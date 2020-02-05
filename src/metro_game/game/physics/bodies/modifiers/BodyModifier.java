@@ -4,6 +4,7 @@ public class BodyModifier {
 	public enum Type {
 		SENSOR,
 		POSITION,
+		LINEAR_IMPULSE,
 		LINEAR_VELOCITY,
 		ROTATION,
 		ANGULAR_VELOCITY

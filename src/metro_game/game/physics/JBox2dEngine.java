@@ -27,6 +27,7 @@ import metro_game.game.physics.bodies.CircleBody;
 import metro_game.game.physics.bodies.Body.BodyPhysicsInterface;
 import metro_game.game.physics.bodies.modifiers.BodyModifier;
 import metro_game.game.physics.bodies.modifiers.BodyModifierAngularVelocity;
+import metro_game.game.physics.bodies.modifiers.BodyModifierLinearImpulse;
 import metro_game.game.physics.bodies.modifiers.BodyModifierLinearVelocity;
 import metro_game.game.physics.bodies.modifiers.BodyModifierPosition;
 import metro_game.game.physics.bodies.modifiers.BodyModifierRotation;
@@ -127,6 +128,11 @@ public class JBox2dEngine implements Engine, ContactListener {
 				case POSITION: {
 					BodyModifierPosition modifier = (BodyModifierPosition) bodyModifier;
 					dst.setTransform(new Vec2(modifier.getX(), modifier.getY()), dst.getAngle());
+					break;
+				}
+				case LINEAR_IMPULSE: {
+					BodyModifierLinearImpulse modifier = (BodyModifierLinearImpulse) bodyModifier;
+					dst.applyLinearImpulse(new Vec2(modifier.getImpulseX(), modifier.getImpulseY()).mul(dst.getMass()), dst.getWorldCenter());
 					break;
 				}
 				case LINEAR_VELOCITY: {

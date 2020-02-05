@@ -38,7 +38,8 @@ public class Window {
 		});
 		
 		GLFW.glfwMakeContextCurrent(m_window);
-		GLFW.glfwSwapInterval(1);
+//		GLFW.glfwSwapInterval(1);
+		GLFW.glfwSwapInterval(0);
 		GLFW.glfwShowWindow(m_window);
 	}
 	
