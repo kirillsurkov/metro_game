@@ -15,6 +15,7 @@ public class Scene {
 	private boolean m_ready;
 	private boolean m_paused;
 	private boolean m_needClose;
+	private float m_slowFactor;
 	private List<GameEntity> m_gameEntities;
 	private Widget m_rootUI;
 	private AlertWidget m_alert;
@@ -24,6 +25,7 @@ public class Scene {
 		m_ready = false;
 		m_paused = false;
 		m_needClose = false;
+		m_slowFactor = 1.0f;
 		m_gameEntities = new ArrayList<GameEntity>();
 		m_rootUI = new Widget(context, 0, 0, context.getWidth(), context.getHeight());
 		m_alert = null;
@@ -47,17 +49,25 @@ public class Scene {
 	public void setReady(boolean ready) {
 		m_ready = ready;
 	}
+
+	public boolean isPaused() {
+		return m_paused;
+	}
 	
 	public void setNeedClose(boolean needClose) {
 		m_needClose = needClose;
 	}
 	
-	public boolean isPaused() {
-		return m_paused;
-	}
-	
 	public boolean isNeedClose() {
 		return m_needClose;
+	}
+	
+	public void setSlowFactor(float slowFactor) {
+		m_slowFactor = slowFactor;
+	}
+	
+	public float getSlowFactor() {
+		return m_slowFactor;
 	}
 	
 	public List<GameEntity> getGameEntities() {

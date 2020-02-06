@@ -8,6 +8,7 @@ import metro_game.game.events.CameraEvent;
 import metro_game.game.events.DestroyEntityEvent;
 import metro_game.game.events.GameEvent;
 import metro_game.game.events.NewBodyEvent;
+import metro_game.game.events.SlowFactorEvent;
 import metro_game.game.events.SwitchSceneEvent;
 import metro_game.game.physics.Physics;
 import metro_game.game.scenes.MainMenu;
@@ -65,7 +66,7 @@ public class Game {
 		}
 		
 		for (UIEvent event : m_context.getUIEvents().getEvents()) {
-			if (event.getType() == Type.BACK) {
+			if (event.getType() == Type.BACK && m_scenes.size() > 0) {
 				if (!m_scenes.lastElement().onBack()) {
 					popScene();
 				}
@@ -101,20 +102,30 @@ public class Game {
 				}
 				break;
 			}
+			case SLOW_FACTOR: {
+				SlowFactorEvent event = (SlowFactorEvent) gameEvent;
+				if (m_scenes.size() > 0) {
+					m_scenes.lastElement().setSlowFactor(event.getSlowFactor());
+				}
+				break;
+			}
 			}
 		}
 		
+		double slowFactor = 1.0;
+		
 		if (m_scenes.size() > 0) {
 			Scene scene = m_scenes.lastElement();
+			slowFactor = scene.getSlowFactor();
 			if (!scene.isPaused()) {
-				m_physics.update(delta);
+				m_physics.update(delta * slowFactor);
 			}
-			scene.update(delta);
+			scene.update(delta * slowFactor);
 			if (scene.isNeedClose()) {
 				popScene();
 			}
 		}
 		
-		m_camera.update(delta);
+		m_camera.update(delta * slowFactor);
 	}
 }

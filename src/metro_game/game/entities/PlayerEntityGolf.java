@@ -5,6 +5,7 @@ import org.joml.Vector2f;
 import metro_game.Context;
 import metro_game.game.entities.ChairEntity.ChairOccupier;
 import metro_game.game.events.CameraEvent;
+import metro_game.game.events.SlowFactorEvent;
 import metro_game.game.physics.bodies.CircleBody;
 import metro_game.game.physics.bodies.Body.BodyGameInterface;
 import metro_game.render.primitives.CirclePrimitive;
@@ -62,11 +63,13 @@ public class PlayerEntityGolf extends PhysicsEntity implements ChairOccupier {
 					m_aimRect.setVisible(false);
 					m_clickPos = null;
 					m_aimPower = 0;
+					m_context.getGameEvents().pushEvent(new SlowFactorEvent(1.0f));
 				} else {
 					if (m_clickPos == null) {
 						m_aimRect.setVisible(true);
 						m_clickPos = new Vector2f(aspect * m_context.getMouseX(), m_context.getMouseY());
 						m_body.setAngularVelocity(0.0f);
+						m_context.getGameEvents().pushEvent(new SlowFactorEvent(0.1f));
 					}
 				}
 			}

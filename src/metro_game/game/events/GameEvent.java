@@ -5,7 +5,8 @@ public class GameEvent {
 		SWITCH_SCENE,
 		NEW_BODY,
 		CAMERA,
-		DESTROY_ENTITY
+		DESTROY_ENTITY,
+		SLOW_FACTOR
 	}
 	
 	private Type m_type;
