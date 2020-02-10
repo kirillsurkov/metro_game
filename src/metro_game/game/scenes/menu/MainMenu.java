@@ -1,8 +1,9 @@
-package metro_game.game.scenes;
+package metro_game.game.scenes.menu;
 
 import metro_game.Context;
 import metro_game.Strings.Language;
 import metro_game.game.events.SwitchSceneEvent;
+import metro_game.game.scenes.Scene;
 import metro_game.ui.events.BackEvent;
 import metro_game.ui.widgets.AlertWidget;
 import metro_game.ui.widgets.ButtonWidget;

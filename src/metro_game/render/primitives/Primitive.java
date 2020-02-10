@@ -6,7 +6,8 @@ public class Primitive {
 		COLOR,
 		RECT,
 		CIRCLE,
-		TEXT
+		TEXT,
+		TRAIL
 	}
 	
 	private Type m_type;

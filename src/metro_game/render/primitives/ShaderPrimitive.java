@@ -3,7 +3,8 @@ package metro_game.render.primitives;
 public class ShaderPrimitive extends Primitive {
 	public enum ShaderType {
 		DEFAULT_GAME,
-		FONT
+		FONT,
+		TRAIL
 	}
 	
 	private ShaderType m_shaderType;

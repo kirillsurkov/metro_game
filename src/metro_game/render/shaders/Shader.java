@@ -33,7 +33,7 @@ public class Shader {
 		System.out.println(GL30.glGetShaderInfoLog(m_fs));
 		
 		m_program = GL30.glCreateProgram();
-		GL30.glBindAttribLocation(m_program, 0, "a_position");
+		GL30.glBindAttribLocation(m_program, A_POSITION, "a_position");
 	}
 	
 	public void link() {

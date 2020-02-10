@@ -11,8 +11,8 @@ import metro_game.game.events.NewBodyEvent;
 import metro_game.game.events.SlowFactorEvent;
 import metro_game.game.events.SwitchSceneEvent;
 import metro_game.game.physics.Physics;
-import metro_game.game.scenes.MainMenu;
 import metro_game.game.scenes.Scene;
+import metro_game.game.scenes.menu.MainMenu;
 import metro_game.ui.events.UIEvent;
 import metro_game.ui.events.UIEvent.Type;
 

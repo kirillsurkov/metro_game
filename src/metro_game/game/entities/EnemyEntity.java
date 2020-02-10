@@ -23,11 +23,11 @@ public class EnemyEntity extends PhysicsEntity implements ChairOccupier {
 	private BodyGameInterface m_body;
 	private Route m_route;
 	
-	public EnemyEntity(Context context, float x, float y, float speed) {
+	public EnemyEntity(Context context, Route.Mode routeMode, float x, float y, float speed) {
 		super(context);
 		float radius = 0.6f;
 		
-		m_route = new Route(x, y, speed, Route.Mode.LOOP_FORWARD_BACKWARD);
+		m_route = new Route(x, y, speed, routeMode);
 		
 		Vector3f rgb = Utils.hsv2rgb((float) Math.random(), 1.0f, 1.0f);
 		

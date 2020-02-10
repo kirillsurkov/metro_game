@@ -21,10 +21,12 @@ import metro_game.render.primitives.Primitive;
 import metro_game.render.primitives.RectPrimitive;
 import metro_game.render.primitives.ShaderPrimitive;
 import metro_game.render.primitives.TextPrimitive;
+import metro_game.render.primitives.TrailPrimitive;
 import metro_game.render.primitives.ShaderPrimitive.ShaderType;
 import metro_game.render.shaders.DefaultGameShader;
 import metro_game.render.shaders.FontShader;
 import metro_game.render.shaders.Shader;
+import metro_game.render.shaders.TrailShader;
 import metro_game.ui.widgets.Widget;
 
 public class Renderer {
@@ -37,6 +39,9 @@ public class Renderer {
 	private int m_quadVAO;
 	private int m_circleVBO;
 	private int m_circleVAO;
+	private int m_lineStaticVBO;
+	private int m_lineDynamicVBO;
+	private int m_lineVAO;
 
 	public Renderer(Context context, Game game) {
 		m_context = context;
@@ -50,12 +55,6 @@ public class Renderer {
 		GL30.glBlendFunc(GL30.GL_ONE, GL30.GL_ONE_MINUS_SRC_ALPHA);
 		
 		float[] quadVertices = new float[] {0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f};
-		float[] circleVertices = new float[2 * 16];
-		for (int i = 0; i < 16; i++) {
-			double angle = 2.0f * Math.PI * i / 16.0f;
-			circleVertices[i*2] = (float) Math.cos(angle);
-			circleVertices[i*2 + 1] = (float) Math.sin(angle);
-		}
 
 		m_quadVBO = GL30.glGenBuffers();
 		m_quadVAO = GL30.glGenVertexArrays();
@@ -65,6 +64,13 @@ public class Renderer {
 		GL30.glVertexAttribPointer(Shader.A_POSITION, 2, GL30.GL_FLOAT, false, 0, 0);
 		GL30.glEnableVertexAttribArray(Shader.A_POSITION);
 		
+		float[] circleVertices = new float[2 * 16];
+		for (int i = 0; i < 16; i++) {
+			double angle = 2.0f * Math.PI * i / 16.0f;
+			circleVertices[i*2] = (float) Math.cos(angle);
+			circleVertices[i*2 + 1] = (float) Math.sin(angle);
+		}
+		
 		m_circleVBO = GL30.glGenBuffers();
 		m_circleVAO = GL30.glGenVertexArrays();
 		GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, m_circleVBO);
@@ -72,6 +78,24 @@ public class Renderer {
 		GL30.glBindVertexArray(m_circleVAO);
 		GL30.glVertexAttribPointer(Shader.A_POSITION, 2, GL30.GL_FLOAT, false, 0, 0);
 		GL30.glEnableVertexAttribArray(Shader.A_POSITION);
+		
+		float[] lineVertices = new float[TrailPrimitive.MAX_POINTS];
+		for (int i = 0; i < lineVertices.length; i++) {
+			lineVertices[i] = i;
+		}
+		
+		m_lineVAO = GL30.glGenVertexArrays();
+		GL30.glBindVertexArray(m_lineVAO);
+		m_lineDynamicVBO = GL30.glGenBuffers();
+		GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, m_lineDynamicVBO);
+		GL30.glBufferData(GL30.GL_ARRAY_BUFFER, new float[TrailPrimitive.MAX_POINTS * 2], GL30.GL_DYNAMIC_DRAW);
+		GL30.glVertexAttribPointer(Shader.A_POSITION, 2, GL30.GL_FLOAT, false, 0, 0);
+		GL30.glEnableVertexAttribArray(Shader.A_POSITION);
+		m_lineStaticVBO = GL30.glGenBuffers();
+		GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, m_lineStaticVBO);
+		GL30.glBufferData(GL30.GL_ARRAY_BUFFER, lineVertices, GL30.GL_STATIC_DRAW);
+		GL30.glVertexAttribPointer(TrailShader.A_NUMBER, 1, GL30.GL_FLOAT, false, 0, 0);
+		GL30.glEnableVertexAttribArray(TrailShader.A_NUMBER);
 		
 		m_currentShader = null;
 	}
@@ -105,6 +129,14 @@ public class Renderer {
 				}
 				return m_shaderCache.get(shaderType);
 			}
+			case TRAIL: {
+				if (!m_shaderCache.containsKey(shaderType)) {
+					TrailShader shader = new TrailShader();
+					shader.link();
+					m_shaderCache.put(shaderType, shader);
+				}
+				return m_shaderCache.get(shaderType);
+			}
 			}
 		} catch (IOException e) {
 			System.out.println("Shader " + shaderType + " not found");
@@ -123,7 +155,16 @@ public class Renderer {
 		GL30.glBindVertexArray(m_circleVAO);
 		GL30.glDrawArrays(GL30.GL_TRIANGLE_FAN, 0, 16);
 	}
-		
+	
+	private void drawLine(float[] vertices, int count, Matrix4f modelViewProjection) {
+		m_currentShader.setMVP(modelViewProjection);
+		GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, m_lineDynamicVBO);
+		GL30.glBufferSubData(GL30.GL_ARRAY_BUFFER, 0, vertices);
+		GL30.glBindVertexArray(m_lineVAO);
+		GL30.glLineWidth(3.0f);
+		GL30.glDrawArrays(GL30.GL_LINE_STRIP, 0, count);
+	}
+	
 	private void drawPrimitive(Primitive primitive, Matrix4f viewProjection, float viewWidth, float viewHeight) {
 		if (!primitive.isVisible()) {
 			return;
@@ -199,6 +240,20 @@ public class Renderer {
 				model.translate(glyph.getAdvanceWidth(), 0.0f, 0.0f);
 			}
 			GL30.glDisable(GL30.GL_TEXTURE_2D);
+			GL30.glDisable(GL30.GL_MULTISAMPLE);
+			break;
+		}
+		case TRAIL: {
+			if (!(m_currentShader instanceof TrailShader)) {
+				System.out.println("Wrong shader bound for trail");
+				break;
+			}
+			TrailPrimitive trail = (TrailPrimitive) primitive;
+			TrailShader shader = (TrailShader) m_currentShader;
+			int count = trail.getVerticesCount();
+			shader.setCount(count);
+			GL30.glEnable(GL30.GL_MULTISAMPLE);
+			drawLine(trail.getVertices(), count, new Matrix4f(viewProjection).mul(model));
 			GL30.glDisable(GL30.GL_MULTISAMPLE);
 			break;
 		}
