@@ -23,7 +23,7 @@ public class ElectronEntity extends PhysicsEntity {
 		float radius = 0.1f;
 		
 		addPrimitive(new ShaderPrimitive(ShaderType.TRAIL));
-		addPrimitive(new ColorPrimitive(0.0f, 1.0f, 1.0f, 0.5f));
+		addPrimitive(new ColorPrimitive(0.0f, 1.0f, 1.0f, 0.25f));
 		m_trail = addPrimitive(new TrailPrimitive());
 		
 		addPrimitive(new ShaderPrimitive(ShaderType.DEFAULT_GAME));

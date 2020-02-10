@@ -1,6 +1,7 @@
 package metro_game.render;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -24,6 +25,7 @@ import metro_game.render.primitives.TextPrimitive;
 import metro_game.render.primitives.TrailPrimitive;
 import metro_game.render.primitives.ShaderPrimitive.ShaderType;
 import metro_game.render.shaders.DefaultGameShader;
+import metro_game.render.shaders.FinalShader;
 import metro_game.render.shaders.FontShader;
 import metro_game.render.shaders.Shader;
 import metro_game.render.shaders.TrailShader;
@@ -35,6 +37,8 @@ public class Renderer {
 	private FontCache m_fontCache;
 	private Map<ShaderType, Shader> m_shaderCache;
 	private Shader m_currentShader;
+	private int m_fbo;
+	private int m_fboColor;
 	private int m_quadVBO;
 	private int m_quadVAO;
 	private int m_circleVBO;
@@ -53,6 +57,27 @@ public class Renderer {
 		GL30.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		GL30.glEnable(GL30.GL_BLEND);
 		GL30.glBlendFunc(GL30.GL_ONE, GL30.GL_ONE_MINUS_SRC_ALPHA);
+		
+		m_fbo = GL32.glGenFramebuffers();
+		GL32.glBindFramebuffer(GL30.GL_FRAMEBUFFER, m_fbo);
+		GL30.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+		GL30.glEnable(GL30.GL_BLEND);
+		GL30.glBlendFunc(GL30.GL_ONE, GL30.GL_ONE_MINUS_SRC_ALPHA);
+		
+		m_fboColor = GL32.glGenTextures();
+		/*GL32.glBindTexture(GL32.GL_TEXTURE_2D_MULTISAMPLE, m_fboColor);
+		GL32.glTexImage2DMultisample(GL32.GL_TEXTURE_2D_MULTISAMPLE, 4, GL32.GL_RGB, context.getWidth(), context.getHeight(), true);
+		GL32.glTexParameteri(GL32.GL_TEXTURE_2D_MULTISAMPLE, GL32.GL_TEXTURE_MAG_FILTER, GL32.GL_LINEAR);
+		GL32.glTexParameteri(GL32.GL_TEXTURE_2D_MULTISAMPLE, GL32.GL_TEXTURE_MIN_FILTER, GL32.GL_LINEAR);*/
+		GL32.glBindTexture(GL32.GL_TEXTURE_2D, m_fboColor);
+		GL32.glTexImage2D(GL32.GL_TEXTURE_2D, 0, GL32.GL_RGB, context.getWidth(), context.getHeight(), 0, GL32.GL_RGB, GL32.GL_UNSIGNED_BYTE, (ByteBuffer) null);
+		GL32.glTexParameteri(GL32.GL_TEXTURE_2D, GL32.GL_TEXTURE_MIN_FILTER, GL32.GL_LINEAR);
+		GL32.glTexParameteri(GL32.GL_TEXTURE_2D, GL32.GL_TEXTURE_MAG_FILTER, GL32.GL_LINEAR);
+		
+		//GL32.glFramebufferTexture2D(GL32.GL_FRAMEBUFFER, GL32.GL_COLOR_ATTACHMENT0, GL32.GL_TEXTURE_2D_MULTISAMPLE, m_fboColor, 0);
+		GL32.glFramebufferTexture2D(GL32.GL_FRAMEBUFFER, GL32.GL_COLOR_ATTACHMENT0, GL32.GL_TEXTURE_2D, m_fboColor, 0);
+		
+		System.out.println(GL32.glCheckFramebufferStatus(GL32.GL_FRAMEBUFFER));
 		
 		float[] quadVertices = new float[] {0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f};
 
@@ -110,6 +135,14 @@ public class Renderer {
 	private Shader getShader(ShaderType shaderType) {
 		try {
 			switch (shaderType) {
+			case FINAL: {
+				if (!m_shaderCache.containsKey(shaderType)) {
+					FinalShader shader = new FinalShader();
+					shader.link();
+					m_shaderCache.put(shaderType, shader);
+				}
+				return m_shaderCache.get(shaderType);
+			}
 			case DEFAULT_GAME: {
 				if (!m_shaderCache.containsKey(shaderType)) {
 					DefaultGameShader shader = new DefaultGameShader();
@@ -306,9 +339,15 @@ public class Renderer {
 			return;
 		}
 		
+		GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, m_fbo);
 		GL30.glClear(GL30.GL_COLOR_BUFFER_BIT | GL30.GL_DEPTH_BUFFER_BIT);
-		
 		drawGameEntities(scene.getGameEntities());
 		drawUI(scene.getRootUI());
+		
+		GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, 0);
+		GL30.glClear(GL30.GL_COLOR_BUFFER_BIT | GL30.GL_DEPTH_BUFFER_BIT);
+		useShader(getShader(ShaderType.FINAL));
+		((FinalShader) m_currentShader).setColorTexture(m_fboColor);
+		drawRect(2.0f, 2.0f, new Matrix4f().translate(-1.0f, -1.0f, 0.0f));
 	}
 }
