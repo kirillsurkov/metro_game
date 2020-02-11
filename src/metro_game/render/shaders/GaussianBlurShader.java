@@ -5,11 +5,9 @@ import java.io.IOException;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GL32;
 
-public class FinalShader extends Shader {
-	public static int SAMPLES = 4;
-	
-	public FinalShader() throws IOException {
-		super("final_shader");
+public class GaussianBlurShader extends Shader {
+	public GaussianBlurShader() throws IOException {
+		super("gaussian_blur_shader");
 	}
 	
 	public void setSamples(int samples) {
@@ -22,17 +20,15 @@ public class FinalShader extends Shader {
 		GL32.glUniform2f(uTextureSize, width, height);
 	}
 	
-	public void setColorTexture(int texture) {
-		int uColor = GL30.glGetUniformLocation(m_program, "u_colorTexture");
+	public void setTexture(int texture) {
+		int uTexture = GL30.glGetUniformLocation(m_program, "u_texture");
 		GL32.glActiveTexture(GL32.GL_TEXTURE0);
 		GL32.glBindTexture(GL32.GL_TEXTURE_2D_MULTISAMPLE, texture);
-		GL32.glUniform1i(uColor, 0);
+		GL32.glUniform1i(uTexture, 0);
 	}
 	
-	public void setGlowTexture(int texture) {
-		int uGlow = GL30.glGetUniformLocation(m_program, "u_glowTexture");
-		GL32.glActiveTexture(GL32.GL_TEXTURE1);
-		GL32.glBindTexture(GL32.GL_TEXTURE_2D_MULTISAMPLE, texture);
-		GL32.glUniform1i(uGlow, 1);
+	public void setHorizontal(boolean horizontal) {
+		int uHorizontal = GL30.glGetUniformLocation(m_program, "u_horizontal");
+		GL32.glUniform1i(uHorizontal, horizontal ? 1 : 0);
 	}
 }

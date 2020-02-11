@@ -44,6 +44,7 @@ public class Shader {
 		System.out.println(GL30.glGetProgramInfoLog(m_program));
 		
 		GL30.glBindFragDataLocation(m_program, 0, "outColor");
+		GL30.glBindFragDataLocation(m_program, 1, "outGlow");
 	}
 	
 	public void setColor(float r, float g, float b, float a) {

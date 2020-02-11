@@ -1,7 +1,6 @@
 package metro_game.render;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -27,6 +26,7 @@ import metro_game.render.primitives.ShaderPrimitive.ShaderType;
 import metro_game.render.shaders.DefaultGameShader;
 import metro_game.render.shaders.FinalShader;
 import metro_game.render.shaders.FontShader;
+import metro_game.render.shaders.GaussianBlurShader;
 import metro_game.render.shaders.Shader;
 import metro_game.render.shaders.TrailShader;
 import metro_game.ui.widgets.Widget;
@@ -38,7 +38,9 @@ public class Renderer {
 	private Map<ShaderType, Shader> m_shaderCache;
 	private Shader m_currentShader;
 	private int m_fbo;
-	private int m_fboColor;
+	private int m_fboTextureTmp;
+	private int m_fboTextureColor;
+	private int m_fboTextureGlow;
 	private int m_quadVBO;
 	private int m_quadVAO;
 	private int m_circleVBO;
@@ -64,18 +66,26 @@ public class Renderer {
 		GL30.glEnable(GL30.GL_BLEND);
 		GL30.glBlendFunc(GL30.GL_ONE, GL30.GL_ONE_MINUS_SRC_ALPHA);
 		
-		m_fboColor = GL32.glGenTextures();
-		/*GL32.glBindTexture(GL32.GL_TEXTURE_2D_MULTISAMPLE, m_fboColor);
-		GL32.glTexImage2DMultisample(GL32.GL_TEXTURE_2D_MULTISAMPLE, 4, GL32.GL_RGB, context.getWidth(), context.getHeight(), true);
-		GL32.glTexParameteri(GL32.GL_TEXTURE_2D_MULTISAMPLE, GL32.GL_TEXTURE_MAG_FILTER, GL32.GL_LINEAR);
-		GL32.glTexParameteri(GL32.GL_TEXTURE_2D_MULTISAMPLE, GL32.GL_TEXTURE_MIN_FILTER, GL32.GL_LINEAR);*/
-		GL32.glBindTexture(GL32.GL_TEXTURE_2D, m_fboColor);
-		GL32.glTexImage2D(GL32.GL_TEXTURE_2D, 0, GL32.GL_RGB, context.getWidth(), context.getHeight(), 0, GL32.GL_RGB, GL32.GL_UNSIGNED_BYTE, (ByteBuffer) null);
-		GL32.glTexParameteri(GL32.GL_TEXTURE_2D, GL32.GL_TEXTURE_MIN_FILTER, GL32.GL_LINEAR);
-		GL32.glTexParameteri(GL32.GL_TEXTURE_2D, GL32.GL_TEXTURE_MAG_FILTER, GL32.GL_LINEAR);
+		m_fboTextureTmp = GL32.glGenTextures();
+		GL32.glBindTexture(GL32.GL_TEXTURE_2D_MULTISAMPLE, m_fboTextureTmp);
+		GL32.glTexImage2DMultisample(GL32.GL_TEXTURE_2D_MULTISAMPLE, FinalShader.SAMPLES, GL32.GL_RGBA, context.getWidth(), context.getHeight(), true);
+		GL32.glTexParameteri(GL32.GL_TEXTURE_2D_MULTISAMPLE, GL32.GL_TEXTURE_MIN_FILTER, GL32.GL_NEAREST);
+		GL32.glTexParameteri(GL32.GL_TEXTURE_2D_MULTISAMPLE, GL32.GL_TEXTURE_MAG_FILTER, GL32.GL_NEAREST);
+		GL32.glFramebufferTexture2D(GL32.GL_FRAMEBUFFER, GL32.GL_COLOR_ATTACHMENT0, GL32.GL_TEXTURE_2D_MULTISAMPLE, m_fboTextureTmp, 0);
 		
-		//GL32.glFramebufferTexture2D(GL32.GL_FRAMEBUFFER, GL32.GL_COLOR_ATTACHMENT0, GL32.GL_TEXTURE_2D_MULTISAMPLE, m_fboColor, 0);
-		GL32.glFramebufferTexture2D(GL32.GL_FRAMEBUFFER, GL32.GL_COLOR_ATTACHMENT0, GL32.GL_TEXTURE_2D, m_fboColor, 0);
+		m_fboTextureColor = GL32.glGenTextures();
+		GL32.glBindTexture(GL32.GL_TEXTURE_2D_MULTISAMPLE, m_fboTextureColor);
+		GL32.glTexImage2DMultisample(GL32.GL_TEXTURE_2D_MULTISAMPLE, FinalShader.SAMPLES, GL32.GL_RGBA, context.getWidth(), context.getHeight(), true);
+		GL32.glTexParameteri(GL32.GL_TEXTURE_2D_MULTISAMPLE, GL32.GL_TEXTURE_MIN_FILTER, GL32.GL_NEAREST);
+		GL32.glTexParameteri(GL32.GL_TEXTURE_2D_MULTISAMPLE, GL32.GL_TEXTURE_MAG_FILTER, GL32.GL_NEAREST);
+		GL32.glFramebufferTexture2D(GL32.GL_FRAMEBUFFER, GL32.GL_COLOR_ATTACHMENT1, GL32.GL_TEXTURE_2D_MULTISAMPLE, m_fboTextureColor, 0);
+		
+		m_fboTextureGlow = GL32.glGenTextures();
+		GL32.glBindTexture(GL32.GL_TEXTURE_2D_MULTISAMPLE, m_fboTextureGlow);
+		GL32.glTexImage2DMultisample(GL32.GL_TEXTURE_2D_MULTISAMPLE, FinalShader.SAMPLES, GL32.GL_RGBA, context.getWidth(), context.getHeight(), true);
+		GL32.glTexParameteri(GL32.GL_TEXTURE_2D_MULTISAMPLE, GL32.GL_TEXTURE_MIN_FILTER, GL32.GL_NEAREST);
+		GL32.glTexParameteri(GL32.GL_TEXTURE_2D_MULTISAMPLE, GL32.GL_TEXTURE_MAG_FILTER, GL32.GL_NEAREST);
+		GL32.glFramebufferTexture2D(GL32.GL_FRAMEBUFFER, GL32.GL_COLOR_ATTACHMENT2, GL32.GL_TEXTURE_2D_MULTISAMPLE, m_fboTextureGlow, 0);
 		
 		System.out.println(GL32.glCheckFramebufferStatus(GL32.GL_FRAMEBUFFER));
 		
@@ -165,6 +175,14 @@ public class Renderer {
 			case TRAIL: {
 				if (!m_shaderCache.containsKey(shaderType)) {
 					TrailShader shader = new TrailShader();
+					shader.link();
+					m_shaderCache.put(shaderType, shader);
+				}
+				return m_shaderCache.get(shaderType);
+			}
+			case GAUSSIAN_BLUR: {
+				if (!m_shaderCache.containsKey(shaderType)) {
+					GaussianBlurShader shader = new GaussianBlurShader();
 					shader.link();
 					m_shaderCache.put(shaderType, shader);
 				}
@@ -338,16 +356,38 @@ public class Renderer {
 		if (scene == null) {
 			return;
 		}
-		
-		GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, m_fbo);
-		GL30.glClear(GL30.GL_COLOR_BUFFER_BIT | GL30.GL_DEPTH_BUFFER_BIT);
+
+		GL32.glBindFramebuffer(GL30.GL_FRAMEBUFFER, m_fbo);
+		GL32.glDrawBuffers(new int[] {GL32.GL_COLOR_ATTACHMENT1, GL32.GL_COLOR_ATTACHMENT2});
+		GL32.glClear(GL30.GL_COLOR_BUFFER_BIT | GL30.GL_DEPTH_BUFFER_BIT);
 		drawGameEntities(scene.getGameEntities());
 		drawUI(scene.getRootUI());
 		
-		GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, 0);
-		GL30.glClear(GL30.GL_COLOR_BUFFER_BIT | GL30.GL_DEPTH_BUFFER_BIT);
-		useShader(getShader(ShaderType.FINAL));
-		((FinalShader) m_currentShader).setColorTexture(m_fboColor);
+		GaussianBlurShader gaussianBlurShader = (GaussianBlurShader) getShader(ShaderType.GAUSSIAN_BLUR);
+		useShader(gaussianBlurShader);
+		gaussianBlurShader.setSamples(FinalShader.SAMPLES);
+		gaussianBlurShader.setTextureSize(m_context.getWidth(), m_context.getHeight());
+		
+		for (int i = 0; i < 9; i++) {
+			gaussianBlurShader.setTexture(m_fboTextureColor);
+			gaussianBlurShader.setHorizontal(true);
+			GL32.glDrawBuffers(new int[] {GL32.GL_COLOR_ATTACHMENT0});
+			drawRect(2.0f, 2.0f, new Matrix4f().translate(-1.0f, -1.0f, 0.0f));
+			
+			gaussianBlurShader.setTexture(m_fboTextureTmp);
+			gaussianBlurShader.setHorizontal(false);
+			GL32.glDrawBuffers(new int[] {GL32.GL_COLOR_ATTACHMENT1});
+			drawRect(2.0f, 2.0f, new Matrix4f().translate(-1.0f, -1.0f, 0.0f));
+		}
+
+		GL32.glBindFramebuffer(GL30.GL_FRAMEBUFFER, 0);
+		GL32.glClear(GL30.GL_COLOR_BUFFER_BIT | GL30.GL_DEPTH_BUFFER_BIT);
+		FinalShader finalShader = (FinalShader) getShader(ShaderType.FINAL);
+		useShader(finalShader);
+		finalShader.setSamples(FinalShader.SAMPLES);
+		finalShader.setTextureSize(m_context.getWidth(), m_context.getHeight());
+		finalShader.setColorTexture(m_fboTextureColor);
+		finalShader.setGlowTexture(m_fboTextureGlow);
 		drawRect(2.0f, 2.0f, new Matrix4f().translate(-1.0f, -1.0f, 0.0f));
 	}
 }

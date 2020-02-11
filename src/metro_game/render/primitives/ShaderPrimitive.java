@@ -5,7 +5,8 @@ public class ShaderPrimitive extends Primitive {
 		FINAL,
 		DEFAULT_GAME,
 		FONT,
-		TRAIL
+		TRAIL,
+		GAUSSIAN_BLUR
 	}
 	
 	private ShaderType m_shaderType;

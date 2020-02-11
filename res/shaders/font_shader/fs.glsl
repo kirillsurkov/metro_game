@@ -14,6 +14,7 @@ in vec2 v_texCoords;
 const float smoothing = 1.0 / 16.0;
 
 out vec4 outColor;
+out vec4 outGlow;
 
 void main() {
 	float distance = texture2D(u_texture, v_texCoords).r;
@@ -25,4 +26,5 @@ void main() {
 		alpha = smoothstep(onborder - smoothing, onborder + smoothing, distance);
 	}
 	outColor = color * alpha;
+	outGlow = vec4(0.0);
 }
