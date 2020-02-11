@@ -1,7 +1,7 @@
 package metro_game.render.primitives;
 
 public class TrailPrimitive extends Primitive {
-	public static int MAX_POINTS = 40;
+	public static int MAX_POINTS = 20;
 	
 	private int m_count;
 	private float[] m_buffer;

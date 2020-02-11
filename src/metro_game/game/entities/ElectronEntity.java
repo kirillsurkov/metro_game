@@ -60,7 +60,7 @@ public class ElectronEntity extends PhysicsEntity {
 		float[] dstY = new float[1];
 		getPosition(delta, dstX, dstY);
 		
-		float power = (float) Math.sin((m_timer * Math.PI * 0.5f) % Math.PI) * 0.5f;
+		float power = (float) Math.sin((m_timer * Math.PI * 0.5f) % Math.PI) * 0.25f;
 		Vector2f vel = new Vector2f(dstX[0] - srcX, dstY[0] - srcY);
 		Vector2f noise = new Vector2f(vel).perpendicular().normalize().mul((float) Math.random() * power);
 		vel.add(noise);

@@ -5,26 +5,21 @@ import java.io.IOException;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GL32;
 
+import metro_game.render.Texture;
+
 public class GaussianBlurShader extends Shader {
 	public GaussianBlurShader() throws IOException {
 		super("gaussian_blur_shader");
 	}
 	
-	public void setSamples(int samples) {
-		int uSamples = GL30.glGetUniformLocation(m_program, "u_samples");
-		GL32.glUniform1i(uSamples, samples);
-	}
-	
-	public void setTextureSize(int width, int height) {
-		int uTextureSize = GL30.glGetUniformLocation(m_program, "u_textureSize");
-		GL32.glUniform2f(uTextureSize, width, height);
-	}
-	
-	public void setTexture(int texture) {
+	public void setTexture(Texture texture) {
 		int uTexture = GL30.glGetUniformLocation(m_program, "u_texture");
 		GL32.glActiveTexture(GL32.GL_TEXTURE0);
-		GL32.glBindTexture(GL32.GL_TEXTURE_2D_MULTISAMPLE, texture);
+		GL32.glBindTexture(texture.getTarget(), texture.getId());
 		GL32.glUniform1i(uTexture, 0);
+		
+		int uTextureSize = GL30.glGetUniformLocation(m_program, "u_textureSize");
+		GL32.glUniform2f(uTextureSize, texture.getWidth(), texture.getHeight());
 	}
 	
 	public void setHorizontal(boolean horizontal) {

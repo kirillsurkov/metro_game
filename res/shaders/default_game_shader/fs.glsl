@@ -9,5 +9,5 @@ out vec4 outGlow;
 
 void main() {
 	outColor = u_color;
-	outGlow = vec4(0.0);
+	outGlow = u_color;//vec4(0.0);
 }
