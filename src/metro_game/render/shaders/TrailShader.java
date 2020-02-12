@@ -9,6 +9,7 @@ public class TrailShader extends Shader {
 	
 	public TrailShader() throws IOException {
 		super("trail_shader");
+		
 		GL30.glBindAttribLocation(m_program, A_NUMBER, "a_number");
 	}
 	

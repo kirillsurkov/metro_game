@@ -37,6 +37,7 @@ public class Renderer {
 	private FontCache m_fontCache;
 	private Map<ShaderType, Shader> m_shaderCache;
 	private Shader m_currentShader;
+	private int m_downsampleFactor;
 	private Framebuffer m_fboMultisample;
 	private Texture m_fboTextureMultisampleColor;
 	private Texture m_fboTextureMultisampleGlow;
@@ -60,16 +61,27 @@ public class Renderer {
 		m_fontCache = new FontCache(m_context);
 		m_shaderCache = new HashMap<ShaderType, Shader>();
 		
-		GL.createCapabilities();
+		GLCapabilities capabilities = GL.createCapabilities();
+		
+		if (!capabilities.OpenGL30) {
+			throw new IllegalStateException("OpenGL 3.0 is not supported");
+		}
+
+		if (!capabilities.GL_ARB_texture_multisample) {
+			throw new IllegalStateException("Extension ARB_texture_multisample is not available");
+		}
+		
 		GL30.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		GL30.glBlendFunc(GL30.GL_ONE, GL30.GL_ONE_MINUS_SRC_ALPHA);
+		
+		m_downsampleFactor = 2;
 		
 		m_fboTextureMultisampleColor = Texture.createMultisample(GL32.GL_RGBA, FinalShader.SAMPLES, context.getWidth(), context.getHeight());
 		m_fboTextureMultisampleGlow = Texture.createMultisample(GL32.GL_RGBA, FinalShader.SAMPLES, context.getWidth(), context.getHeight());
 		m_fboTextureRasterizeColor = Texture.create(GL32.GL_RGBA, GL32.GL_RGBA, context.getWidth(), context.getHeight());
 		m_fboTextureRasterizeGlow = Texture.create(GL32.GL_RGBA, GL32.GL_RGBA, context.getWidth(), context.getHeight());
-		m_fboTextureDownsampleTmp = Texture.create(GL32.GL_RGBA, GL32.GL_RGBA, context.getWidth() / 2, context.getHeight() / 2);
-		m_fboTextureDownsampleGlow = Texture.create(GL32.GL_RGBA, GL32.GL_RGBA, context.getWidth() / 2, context.getHeight() / 2);
+		m_fboTextureDownsampleTmp = Texture.create(GL32.GL_RGBA, GL32.GL_RGBA, context.getWidth() / m_downsampleFactor, context.getHeight() / m_downsampleFactor);
+		m_fboTextureDownsampleGlow = Texture.create(GL32.GL_RGBA, GL32.GL_RGBA, context.getWidth() / m_downsampleFactor, context.getHeight() / m_downsampleFactor);
 		
 		m_fboMultisample = Framebuffer.create();
 		m_fboMultisample.attachTexture(m_fboTextureMultisampleColor);
@@ -207,7 +219,9 @@ public class Renderer {
 	private void drawLine(float[] vertices, int count, Matrix4f modelViewProjection) {
 		m_currentShader.setMVP(modelViewProjection);
 		GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, m_lineDynamicVBO);
-		GL30.glBufferSubData(GL30.GL_ARRAY_BUFFER, 0, vertices);
+		if (vertices != null) {
+			GL30.glBufferSubData(GL30.GL_ARRAY_BUFFER, 0, vertices);
+		}
 		GL30.glBindVertexArray(m_lineVAO);
 		GL30.glDrawArrays(GL30.GL_LINE_STRIP, 0, count);
 	}
@@ -308,12 +322,13 @@ public class Renderer {
 			GL30.glEnable(GL30.GL_BLEND);
 			GL30.glEnable(GL30.GL_MULTISAMPLE);
 			GL30.glEnable(GL30.GL_LINE_SMOOTH);
-			GL30.glLineWidth(1.0f);
+			
 			shader.setGlow(false);
 			drawLine(trail.getVertices(), count, new Matrix4f(viewProjection).mul(model));
-			GL30.glLineWidth(3.0f);
+			
 			shader.setGlow(true);
 			drawLine(trail.getVertices(), count, new Matrix4f(viewProjection).mul(model));
+			
 			GL30.glDisable(GL30.GL_LINE_SMOOTH);
 			GL30.glDisable(GL30.GL_MULTISAMPLE);
 			GL30.glDisable(GL30.GL_BLEND);
@@ -326,7 +341,7 @@ public class Renderer {
 		Camera camera = m_game.getCamera();
 		Vector2f cameraPosition = camera.getPosition();
 		float aspect = m_context.getAspect();
-		float scale = 10;
+		float scale = 5;
 		
 		float width = aspect * scale * 2.0f;
 		float height = scale * 2.0f;
@@ -402,16 +417,16 @@ public class Renderer {
 		GaussianBlurShader gaussianBlurShader = (GaussianBlurShader) getShader(ShaderType.GAUSSIAN_BLUR);
 		useShader(gaussianBlurShader);
 		
-		for (int i = 0; i < 4; i++) {
+		for (int i = 0; i < 1; i++) {
 			gaussianBlurShader.setTexture(m_fboTextureDownsampleGlow);
 			gaussianBlurShader.setHorizontal(true);
 			GL32.glDrawBuffers(new int[] {m_fboTextureDownsampleTmp.getAttachmentId()});
-			drawRect(2.0f, 2.0f, new Matrix4f().translate(-1.0f, -1.0f, 0.0f).scale(0.5f, 0.5f, 1.0f));
+			drawRect(2.0f, 2.0f, new Matrix4f().translate(-1.0f, -1.0f, 0.0f).scale(1.0f / (float) m_downsampleFactor, 1.0f / (float) m_downsampleFactor, 1.0f));
 			
 			gaussianBlurShader.setTexture(m_fboTextureDownsampleTmp);
 			gaussianBlurShader.setHorizontal(false);
 			GL32.glDrawBuffers(new int[] {m_fboTextureDownsampleGlow.getAttachmentId()});
-			drawRect(2.0f, 2.0f, new Matrix4f().translate(-1.0f, -1.0f, 0.0f).scale(0.5f, 0.5f, 1.0f));
+			drawRect(2.0f, 2.0f, new Matrix4f().translate(-1.0f, -1.0f, 0.0f).scale(1.0f / (float) m_downsampleFactor, 1.0f / (float) m_downsampleFactor, 1.0f));
 		}
 		
 		GL32.glBindFramebuffer(GL30.GL_FRAMEBUFFER, 0);

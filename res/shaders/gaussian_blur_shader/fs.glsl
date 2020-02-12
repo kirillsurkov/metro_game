@@ -1,5 +1,4 @@
 #version 130
-#extension GL_ARB_texture_multisample: enable
 
 precision highp float;
 

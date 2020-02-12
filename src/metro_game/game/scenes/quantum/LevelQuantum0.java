@@ -11,14 +11,11 @@ public class LevelQuantum0 extends LevelQuantumBase {
 		super(context);
 	}
 	
-	@Override
-	public void init() {
+	private void addAtom(float atomX, float atomY) {
 		int electrons = 35;
-		float atomX = 0.0f;
-		float atomY = 0.0f;
 		float atomRadius = 4.0f;
 		float atomRadiusStep = 2.0f;
-		addGameEntity(new EnemyEntity(m_context, Route.Mode.LOOP_START_END, atomX, atomY, 0.0f));
+		addGameEntity(new EnemyEntity(m_context, Route.Mode.LOOP_START_END, atomX, atomY, 1.0f));
 		
 		int level = 0;
 		int index = 0;
@@ -48,7 +45,14 @@ public class LevelQuantum0 extends LevelQuantumBase {
 				radius += Math.pow(atomRadiusStep, 3) / Math.pow(level + 1, 2);
 			}
 		}
-		
+	}
+	
+	@Override
+	public void init() {
+		addAtom(-12.0f, 0.0f);
+		addAtom(-4.0f, 0.0f);
+		addAtom(4.0f, 0.0f);
+		addAtom(12.0f, 0.0f);
 		addGameEntity(new PlayerEntityGolf(m_context, 0.0f, 6.0f));
 	}
 }
