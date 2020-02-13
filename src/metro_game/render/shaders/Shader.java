@@ -12,17 +12,22 @@ public class Shader {
 	public static int A_POSITION = 0;
 	
 	protected int m_program;
+	private String m_name;
 	private int m_vs;
 	private int m_fs;
 	
 	public Shader(String name) throws IOException {
+		m_name = name;
+		
 		m_vs = GL30.glCreateShader(GL30.GL_VERTEX_SHADER);
 		ByteBuffer vsBB = Utils.readFile("res/shaders/" + name + "/vs.glsl");
 		byte[] vsB = new byte[vsBB.capacity()];
 		vsBB.get(vsB);
 		GL30.glShaderSource(m_vs, new String(vsB));
 		GL30.glCompileShader(m_vs);
-		System.out.println(GL30.glGetShaderInfoLog(m_vs));
+		if (GL30.glGetShaderi(m_vs, GL30.GL_COMPILE_STATUS) != GL30.GL_TRUE) {
+			System.out.println("Vertex shader '" + name + "' failed:\n" + GL30.glGetShaderInfoLog(m_vs));
+		}
 		
 		m_fs = GL30.glCreateShader(GL30.GL_FRAGMENT_SHADER);
 		ByteBuffer fsBB = Utils.readFile("res/shaders/" + name + "/fs.glsl");
@@ -30,7 +35,9 @@ public class Shader {
 		fsBB.get(fsB);
 		GL30.glShaderSource(m_fs, new String(fsB));
 		GL30.glCompileShader(m_fs);
-		System.out.println(GL30.glGetShaderInfoLog(m_fs));
+		if (GL30.glGetShaderi(m_fs, GL30.GL_COMPILE_STATUS) != GL30.GL_TRUE) {
+			System.out.println("Fragment shader '" + name + "' failed:\n" + GL30.glGetShaderInfoLog(m_fs));
+		}
 		
 		m_program = GL30.glCreateProgram();
 		GL30.glBindAttribLocation(m_program, A_POSITION, "a_position");
@@ -41,7 +48,9 @@ public class Shader {
 		GL30.glAttachShader(m_program, m_fs);
 		
 		GL30.glLinkProgram(m_program);
-		System.out.println(GL30.glGetProgramInfoLog(m_program));
+		if (GL30.glGetProgrami(m_program, GL30.GL_LINK_STATUS) != GL30.GL_TRUE) {
+			System.out.println("Program '" + m_name + "' failed:\n" + GL30.glGetProgramInfoLog(m_program));
+		}
 		
 		GL30.glBindFragDataLocation(m_program, 0, "outColor");
 		GL30.glBindFragDataLocation(m_program, 1, "outGlow");
