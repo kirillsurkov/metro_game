@@ -39,14 +39,14 @@ public class Renderer {
 	private Shader m_currentShader;
 	private int m_downsampleFactor;
 	private Framebuffer m_fboMultisample;
-	private Texture m_fboTextureMultisampleColor;
-	private Texture m_fboTextureMultisampleGlow;
+	private Texture m_fboMultisampleTextureColor;
+	private Texture m_fboMultisampleTextureGlow;
 	private Framebuffer m_fboRasterize;
-	private Texture m_fboTextureRasterizeColor;
-	private Texture m_fboTextureRasterizeGlow;
+	private Texture m_fboRasterizeTextureColor;
+	private Texture m_fboRasterizeTextureGlow;
 	private Framebuffer m_fboDownsample;
-	private Texture m_fboTextureDownsampleTmp;
-	private Texture m_fboTextureDownsampleGlow;
+	private Texture m_fboDownsampleTextureTmp;
+	private Texture m_fboDownsampleTextureGlow;
 	private int m_quadVBO;
 	private int m_quadVAO;
 	private int m_circleVBO;
@@ -74,28 +74,21 @@ public class Renderer {
 		GL30.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		GL30.glBlendFunc(GL30.GL_ONE, GL30.GL_ONE_MINUS_SRC_ALPHA);
 		
-		m_downsampleFactor = 2;
+		m_downsampleFactor = 8;
 		
-		m_fboTextureMultisampleColor = Texture.createMultisample(GL32.GL_RGBA, FinalShader.SAMPLES, context.getWidth(), context.getHeight());
-		m_fboTextureMultisampleGlow = Texture.createMultisample(GL32.GL_RGBA, FinalShader.SAMPLES, context.getWidth(), context.getHeight());
-		m_fboTextureRasterizeColor = Texture.create(GL32.GL_RGBA, GL32.GL_RGBA, context.getWidth(), context.getHeight());
-		m_fboTextureRasterizeGlow = Texture.create(GL32.GL_RGBA, GL32.GL_RGBA, context.getWidth(), context.getHeight());
-		m_fboTextureDownsampleTmp = Texture.create(GL32.GL_RGBA, GL32.GL_RGBA, context.getWidth() / m_downsampleFactor, context.getHeight() / m_downsampleFactor);
-		m_fboTextureDownsampleGlow = Texture.create(GL32.GL_RGBA, GL32.GL_RGBA, context.getWidth() / m_downsampleFactor, context.getHeight() / m_downsampleFactor);
-		
-		m_fboMultisample = Framebuffer.create();
-		m_fboMultisample.attachTexture(m_fboTextureMultisampleColor);
-		m_fboMultisample.attachTexture(m_fboTextureMultisampleGlow);
+		m_fboMultisample = Framebuffer.create(context.getWidth(), context.getHeight(), FinalShader.SAMPLES);
+		m_fboMultisampleTextureColor = m_fboMultisample.attachTexture();
+		m_fboMultisampleTextureGlow = m_fboMultisample.attachTexture();
 		System.out.println(GL32.glCheckFramebufferStatus(GL32.GL_FRAMEBUFFER));
 		
-		m_fboRasterize = Framebuffer.create();
-		m_fboRasterize.attachTexture(m_fboTextureRasterizeColor);
-		m_fboRasterize.attachTexture(m_fboTextureRasterizeGlow);
+		m_fboRasterize = Framebuffer.create(context.getWidth(), context.getHeight(), 1);
+		m_fboRasterizeTextureColor = m_fboRasterize.attachTexture();
+		m_fboRasterizeTextureGlow = m_fboRasterize.attachTexture();
 		System.out.println(GL32.glCheckFramebufferStatus(GL32.GL_FRAMEBUFFER));
 		
-		m_fboDownsample = Framebuffer.create();
-		m_fboDownsample.attachTexture(m_fboTextureDownsampleTmp);
-		m_fboDownsample.attachTexture(m_fboTextureDownsampleGlow);
+		m_fboDownsample = Framebuffer.create(context.getWidth() / m_downsampleFactor, context.getHeight() / m_downsampleFactor, 1);
+		m_fboDownsampleTextureTmp = m_fboDownsample.attachTexture();
+		m_fboDownsampleTextureGlow = m_fboDownsample.attachTexture();
 		System.out.println(GL32.glCheckFramebufferStatus(GL32.GL_FRAMEBUFFER));
 		
 		float[] quadVertices = new float[] {0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f};
@@ -341,7 +334,7 @@ public class Renderer {
 		Camera camera = m_game.getCamera();
 		Vector2f cameraPosition = camera.getPosition();
 		float aspect = m_context.getAspect();
-		float scale = 5;
+		float scale = 10;
 		
 		float width = aspect * scale * 2.0f;
 		float height = scale * 2.0f;
@@ -384,50 +377,54 @@ public class Renderer {
 		}
 
 		GL32.glBindFramebuffer(GL30.GL_FRAMEBUFFER, m_fboMultisample.getId());
-		GL32.glDrawBuffers(new int[] {m_fboTextureMultisampleColor.getAttachmentId(), m_fboTextureMultisampleGlow.getAttachmentId()});
+		GL32.glDrawBuffers(new int[] {m_fboMultisampleTextureColor.getAttachmentId(), m_fboMultisampleTextureGlow.getAttachmentId()});
 		GL32.glClear(GL30.GL_COLOR_BUFFER_BIT | GL30.GL_DEPTH_BUFFER_BIT);
 		drawGameEntities(scene.getGameEntities());
 		drawUI(scene.getRootUI());
 		
 		GL32.glBindFramebuffer(GL30.GL_DRAW_FRAMEBUFFER, m_fboRasterize.getId());
 		
-		GL32.glReadBuffer(m_fboTextureMultisampleColor.getAttachmentId());
-		GL32.glDrawBuffer(m_fboTextureRasterizeColor.getAttachmentId());
+		GL32.glReadBuffer(m_fboMultisampleTextureColor.getAttachmentId());
+		GL32.glDrawBuffer(m_fboRasterizeTextureColor.getAttachmentId());
 		GL32.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 		GL32.glClear(GL32.GL_COLOR_BUFFER_BIT);
-		GL32.glBlitFramebuffer(0, 0, m_fboTextureMultisampleColor.getWidth(), m_fboTextureMultisampleColor.getHeight(), 0, 0, m_fboTextureRasterizeColor.getWidth(), m_fboTextureRasterizeColor.getHeight(), GL32.GL_COLOR_BUFFER_BIT, GL32.GL_LINEAR);
+		GL32.glBlitFramebuffer(0, 0, m_fboMultisample.getWidth(), m_fboMultisample.getHeight(), 0, 0, m_fboRasterize.getWidth(), m_fboRasterize.getHeight(), GL32.GL_COLOR_BUFFER_BIT, GL32.GL_LINEAR);
 		
-		GL32.glReadBuffer(m_fboTextureMultisampleGlow.getAttachmentId());
-		GL32.glDrawBuffer(m_fboTextureRasterizeGlow.getAttachmentId());
+		GL32.glReadBuffer(m_fboMultisampleTextureGlow.getAttachmentId());
+		GL32.glDrawBuffer(m_fboRasterizeTextureGlow.getAttachmentId());
 		GL32.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 		GL32.glClear(GL32.GL_COLOR_BUFFER_BIT);
-		GL32.glBlitFramebuffer(0, 0, m_fboTextureMultisampleGlow.getWidth(), m_fboTextureMultisampleGlow.getHeight(), 0, 0, m_fboTextureRasterizeGlow.getWidth(), m_fboTextureRasterizeGlow.getHeight(), GL32.GL_COLOR_BUFFER_BIT, GL32.GL_LINEAR);
+		GL32.glBlitFramebuffer(0, 0, m_fboMultisample.getWidth(), m_fboMultisample.getHeight(), 0, 0, m_fboRasterize.getWidth(), m_fboRasterize.getHeight(), GL32.GL_COLOR_BUFFER_BIT, GL32.GL_LINEAR);
 		
 		GL32.glBindFramebuffer(GL30.GL_READ_FRAMEBUFFER, m_fboRasterize.getId());
 		GL32.glBindFramebuffer(GL30.GL_DRAW_FRAMEBUFFER, m_fboDownsample.getId());
 		
-		GL32.glReadBuffer(m_fboTextureRasterizeGlow.getAttachmentId());
-		GL32.glDrawBuffer(m_fboTextureDownsampleGlow.getAttachmentId());
+		GL32.glReadBuffer(m_fboRasterizeTextureGlow.getAttachmentId());
+		GL32.glDrawBuffer(m_fboDownsampleTextureGlow.getAttachmentId());
 		GL32.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 		GL32.glClear(GL32.GL_COLOR_BUFFER_BIT);
-		GL32.glBlitFramebuffer(0, 0, m_fboTextureRasterizeGlow.getWidth(), m_fboTextureRasterizeGlow.getHeight(), 0, 0, m_fboTextureDownsampleGlow.getWidth(), m_fboTextureDownsampleGlow.getHeight(), GL32.GL_COLOR_BUFFER_BIT, GL32.GL_LINEAR);
+		GL32.glBlitFramebuffer(0, 0, m_fboRasterize.getWidth(), m_fboRasterize.getHeight(), 0, 0, m_fboDownsample.getWidth(), m_fboDownsample.getHeight(), GL32.GL_COLOR_BUFFER_BIT, GL32.GL_LINEAR);
 		
 		GL32.glBindFramebuffer(GL30.GL_READ_FRAMEBUFFER, m_fboDownsample.getId());
+		
+		GL30.glViewport(0, 0, m_fboDownsample.getWidth(), m_fboDownsample.getHeight());
 		
 		GaussianBlurShader gaussianBlurShader = (GaussianBlurShader) getShader(ShaderType.GAUSSIAN_BLUR);
 		useShader(gaussianBlurShader);
 		
-		for (int i = 0; i < 1; i++) {
-			gaussianBlurShader.setTexture(m_fboTextureDownsampleGlow);
+		for (int i = 0; i < 4; i++) {
+			gaussianBlurShader.setTexture(m_fboDownsampleTextureGlow);
 			gaussianBlurShader.setHorizontal(true);
-			GL32.glDrawBuffers(new int[] {m_fboTextureDownsampleTmp.getAttachmentId()});
-			drawRect(2.0f, 2.0f, new Matrix4f().translate(-1.0f, -1.0f, 0.0f).scale(1.0f / (float) m_downsampleFactor, 1.0f / (float) m_downsampleFactor, 1.0f));
+			GL32.glDrawBuffers(new int[] {m_fboDownsampleTextureTmp.getAttachmentId()});
+			drawRect(2.0f, 2.0f, new Matrix4f().translate(-1.0f, -1.0f, 0.0f));
 			
-			gaussianBlurShader.setTexture(m_fboTextureDownsampleTmp);
+			gaussianBlurShader.setTexture(m_fboDownsampleTextureTmp);
 			gaussianBlurShader.setHorizontal(false);
-			GL32.glDrawBuffers(new int[] {m_fboTextureDownsampleGlow.getAttachmentId()});
-			drawRect(2.0f, 2.0f, new Matrix4f().translate(-1.0f, -1.0f, 0.0f).scale(1.0f / (float) m_downsampleFactor, 1.0f / (float) m_downsampleFactor, 1.0f));
+			GL32.glDrawBuffers(new int[] {m_fboDownsampleTextureGlow.getAttachmentId()});
+			drawRect(2.0f, 2.0f, new Matrix4f().translate(-1.0f, -1.0f, 0.0f));
 		}
+		
+		GL30.glViewport(0, 0, m_fboMultisample.getWidth(), m_fboMultisample.getHeight());
 		
 		GL32.glBindFramebuffer(GL30.GL_FRAMEBUFFER, 0);
 		GL32.glClear(GL30.GL_COLOR_BUFFER_BIT | GL30.GL_DEPTH_BUFFER_BIT);
@@ -435,9 +432,9 @@ public class Renderer {
 		GL30.glEnable(GL30.GL_BLEND);
 		FinalShader finalShader = (FinalShader) getShader(ShaderType.FINAL);
 		useShader(finalShader);
-		finalShader.setTexture(m_fboTextureDownsampleGlow);
+		finalShader.setTexture(m_fboDownsampleTextureGlow);
 		drawRect(2.0f, 2.0f, new Matrix4f().translate(-1.0f, -1.0f, 0.0f));
-		finalShader.setTexture(m_fboTextureRasterizeColor);
+		finalShader.setTexture(m_fboRasterizeTextureColor);
 		drawRect(2.0f, 2.0f, new Matrix4f().translate(-1.0f, -1.0f, 0.0f));
 		GL30.glDisable(GL30.GL_BLEND);
 	}
