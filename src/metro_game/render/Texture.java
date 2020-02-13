@@ -23,6 +23,8 @@ public class Texture {
 		GL32.glTexImage2D(GL32.GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, GL32.GL_FLOAT, (float[]) null);
 		GL32.glTexParameteri(GL32.GL_TEXTURE_2D, GL32.GL_TEXTURE_MIN_FILTER, GL32.GL_LINEAR);
 		GL32.glTexParameteri(GL32.GL_TEXTURE_2D, GL32.GL_TEXTURE_MAG_FILTER, GL32.GL_LINEAR);
+		GL32.glTexParameteri(GL32.GL_TEXTURE_2D, GL32.GL_TEXTURE_WRAP_S, GL32.GL_CLAMP_TO_EDGE);
+		GL32.glTexParameteri(GL32.GL_TEXTURE_2D, GL32.GL_TEXTURE_WRAP_T, GL32.GL_CLAMP_TO_EDGE);
 		return new Texture(texture, GL32.GL_TEXTURE_2D, width, height);
 	}
 	

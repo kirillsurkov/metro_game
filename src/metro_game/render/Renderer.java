@@ -74,7 +74,7 @@ public class Renderer {
 		GL30.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		GL30.glBlendFunc(GL30.GL_ONE, GL30.GL_ONE_MINUS_SRC_ALPHA);
 		
-		m_downsampleFactor = 8;
+		m_downsampleFactor = 2;
 		
 		m_fboMultisample = Framebuffer.create(context.getWidth(), context.getHeight(), FinalShader.SAMPLES);
 		m_fboMultisampleTextureColor = m_fboMultisample.attachTexture();
@@ -412,7 +412,7 @@ public class Renderer {
 		GaussianBlurShader gaussianBlurShader = (GaussianBlurShader) getShader(ShaderType.GAUSSIAN_BLUR);
 		useShader(gaussianBlurShader);
 		
-		for (int i = 0; i < 4; i++) {
+		for (int i = 0; i < 2; i++) {
 			gaussianBlurShader.setTexture(m_fboDownsampleTextureGlow);
 			gaussianBlurShader.setHorizontal(true);
 			GL32.glDrawBuffers(new int[] {m_fboDownsampleTextureTmp.getAttachmentId()});
