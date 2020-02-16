@@ -20,6 +20,6 @@ public class TrailShader extends Shader {
 	
 	public void setCount(int count) {
 		int uCount = GL30.glGetUniformLocation(m_program, "u_count");
-		GL30.glUniform1f(uCount, count);
+		GL30.glUniform1i(uCount, count);
 	}
 }

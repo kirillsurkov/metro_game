@@ -116,7 +116,7 @@ public class Renderer {
 		GL30.glVertexAttribPointer(Shader.A_POSITION, 2, GL30.GL_FLOAT, false, 0, 0);
 		GL30.glEnableVertexAttribArray(Shader.A_POSITION);
 		
-		float[] lineVertices = new float[TrailPrimitive.MAX_POINTS];
+		float[] lineVertices = new float[TrailPrimitive.MAX_POINTS * 2];
 		for (int i = 0; i < lineVertices.length; i++) {
 			lineVertices[i] = i;
 		}
@@ -125,7 +125,7 @@ public class Renderer {
 		GL30.glBindVertexArray(m_lineVAO);
 		m_lineDynamicVBO = GL30.glGenBuffers();
 		GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, m_lineDynamicVBO);
-		GL30.glBufferData(GL30.GL_ARRAY_BUFFER, new float[TrailPrimitive.MAX_POINTS * 2], GL30.GL_DYNAMIC_DRAW);
+		GL30.glBufferData(GL30.GL_ARRAY_BUFFER, new float[TrailPrimitive.MAX_POINTS * 4], GL30.GL_DYNAMIC_DRAW);
 		GL30.glVertexAttribPointer(Shader.A_POSITION, 2, GL30.GL_FLOAT, false, 0, 0);
 		GL30.glEnableVertexAttribArray(Shader.A_POSITION);
 		m_lineStaticVBO = GL30.glGenBuffers();
@@ -212,11 +212,9 @@ public class Renderer {
 	private void drawLine(float[] vertices, int count, Matrix4f modelViewProjection) {
 		m_currentShader.setMVP(modelViewProjection);
 		GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, m_lineDynamicVBO);
-		if (vertices != null) {
-			GL30.glBufferSubData(GL30.GL_ARRAY_BUFFER, 0, vertices);
-		}
+		GL30.glBufferSubData(GL30.GL_ARRAY_BUFFER, 0, vertices);
 		GL30.glBindVertexArray(m_lineVAO);
-		GL30.glDrawArrays(GL30.GL_LINE_STRIP, 0, count);
+		GL30.glDrawArrays(GL30.GL_QUAD_STRIP, 0, count * 2);
 	}
 	
 	private void drawPrimitive(Primitive primitive, Matrix4f viewProjection, float viewWidth, float viewHeight) {
@@ -315,13 +313,7 @@ public class Renderer {
 			GL30.glEnable(GL30.GL_BLEND);
 			GL30.glEnable(GL30.GL_MULTISAMPLE);
 			GL30.glEnable(GL30.GL_LINE_SMOOTH);
-			
-			shader.setGlow(false);
 			drawLine(trail.getVertices(), count, new Matrix4f(viewProjection).mul(model));
-			
-			shader.setGlow(true);
-			drawLine(trail.getVertices(), count, new Matrix4f(viewProjection).mul(model));
-			
 			GL30.glDisable(GL30.GL_LINE_SMOOTH);
 			GL30.glDisable(GL30.GL_MULTISAMPLE);
 			GL30.glDisable(GL30.GL_BLEND);
@@ -412,7 +404,7 @@ public class Renderer {
 		GaussianBlurShader gaussianBlurShader = (GaussianBlurShader) getShader(ShaderType.GAUSSIAN_BLUR);
 		useShader(gaussianBlurShader);
 		
-		for (int i = 0; i < 2; i++) {
+		for (int i = 0; i < 1; i++) {
 			gaussianBlurShader.setTexture(m_fboDownsampleTextureGlow);
 			gaussianBlurShader.setHorizontal(true);
 			GL32.glDrawBuffers(new int[] {m_fboDownsampleTextureTmp.getAttachmentId()});

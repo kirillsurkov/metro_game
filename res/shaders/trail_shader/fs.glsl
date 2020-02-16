@@ -3,14 +3,18 @@
 precision highp float;
 
 uniform vec4 u_color;
-uniform bool u_glow;
 
 in float v_x;
+in float v_uv_x;
 
 out vec4 outColor;
 out vec4 outGlow;
 
+const float smoothing = 1.0 / 16.0;
+const float colorWidth = 0.3;
+
 void main() {
-	outColor = (u_glow ? 0 : 1) * v_x * u_color;
-	outGlow = (u_glow ? 1 : 0) * v_x * u_color;
+	float color = smoothstep(colorWidth + smoothing, colorWidth - smoothing, abs(v_uv_x));
+	outColor = color * v_x * u_color;
+	outGlow = v_x * u_color;
 }

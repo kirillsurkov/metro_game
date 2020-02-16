@@ -1,7 +1,9 @@
 package metro_game.render.primitives;
 
+import org.joml.Vector2f;
+
 public class TrailPrimitive extends Primitive {
-	public static int MAX_POINTS = 20;
+	public static int MAX_POINTS = 15;
 	
 	private int m_count;
 	private float[] m_buffer;
@@ -10,14 +12,23 @@ public class TrailPrimitive extends Primitive {
 	public TrailPrimitive() {
 		super(Type.TRAIL);
 		m_count = 0;
-		m_buffer = new float[MAX_POINTS * 2];
+		m_buffer = new float[MAX_POINTS * 4];
 		m_frames = 0;
 	}
 	
 	private void setCurrentPoint(float x, float y) {
+		float width = 0.1f;
+		Vector2f offset = new Vector2f(1.0f, 0.0f);
+		if (m_count > 1) {
+			float px = (m_buffer[(m_count - 2) * 4 + 0] + m_buffer[(m_count - 2) * 4 + 2]) / 2.0f;
+			float py = (m_buffer[(m_count - 2) * 4 + 1] + m_buffer[(m_count - 2) * 4 + 3]) / 2.0f;
+			offset = new Vector2f(px - x, py - y).perpendicular().normalize();
+		}
 		if (m_count > 0) {
-			m_buffer[(m_count - 1) * 2 + 0] = x;
-			m_buffer[(m_count - 1) * 2 + 1] = y;
+			m_buffer[(m_count - 1) * 4 + 0] = x + offset.x * width;
+			m_buffer[(m_count - 1) * 4 + 1] = y + offset.y * width;
+			m_buffer[(m_count - 1) * 4 + 2] = x - offset.x * width;
+			m_buffer[(m_count - 1) * 4 + 3] = y - offset.y * width;
 		}
 	}
 	
@@ -25,12 +36,11 @@ public class TrailPrimitive extends Primitive {
 		if (m_count >= MAX_POINTS) {
 			m_count--;
 			float[] buffer = new float[m_buffer.length];
-			System.arraycopy(m_buffer, 2, buffer, 0, m_buffer.length - 2);
+			System.arraycopy(m_buffer, 4, buffer, 0, m_buffer.length - 4);
 			m_buffer = buffer;
 		}
-		m_buffer[m_count * 2 + 0] = x;
-		m_buffer[m_count * 2 + 1] = y;
 		m_count++;
+		setCurrentPoint(x, y);
 	}
 	
 	public void update(double delta, float x, float y) {

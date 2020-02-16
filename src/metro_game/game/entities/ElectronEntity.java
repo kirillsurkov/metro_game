@@ -15,7 +15,6 @@ public class ElectronEntity extends PhysicsEntity {
 	private CirclePrimitive m_circle;
 	private TrailPrimitive m_trail;
 	private BodyGameInterface m_body;
-	//private float m_timer;
 	
 	public ElectronEntity(Context context, float x, float y) {
 		super(context);
@@ -29,8 +28,6 @@ public class ElectronEntity extends PhysicsEntity {
 		addPrimitive(new ColorPrimitive(0.0f, 1.0f, 1.0f, 1.0f));
 		m_circle = addPrimitive(new CirclePrimitive(x, y, radius, 0.0f));
 		m_body = addBody(new CircleBody(true, x, y, 0.0f, 0.0f, 0.0f, 0.0f, radius));
-		
-		//m_timer = 0.0f;
 	}
 	
 	public void getPosition(double delta, float[] x, float[] y) {
@@ -45,8 +42,6 @@ public class ElectronEntity extends PhysicsEntity {
 	
 	@Override
 	public void update(double delta) {
-		//m_timer += delta;
-		
 		float srcX = m_body.getPositionX();
 		float srcY = m_body.getPositionY();
 		
@@ -59,10 +54,7 @@ public class ElectronEntity extends PhysicsEntity {
 		float[] dstY = new float[1];
 		getPosition(delta, dstX, dstY);
 		
-		//float power = (float) Math.sin((m_timer * Math.PI * 0.5f) % Math.PI) * 0.25f;
 		Vector2f vel = new Vector2f(dstX[0] - srcX, dstY[0] - srcY);
-		//Vector2f noise = new Vector2f(vel).perpendicular().normalize().mul((float) Math.random() * power);
-		//vel.add(noise);
 		vel.mul(60.0f);
 		
 		m_body.applyLinearImpulse(vel.x - m_body.getLinearVelocityX(), vel.y - m_body.getLinearVelocityY());
