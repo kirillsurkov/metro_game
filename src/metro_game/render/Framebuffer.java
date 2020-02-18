@@ -27,9 +27,13 @@ public class Framebuffer {
 		return new Framebuffer(id, width, height, samples);
 	}
 	
+	public static Framebuffer create(int width, int height) {
+		return create(width, height, 0);
+	}
+	
 	public Texture attachTexture() {
 		Texture texture;
-		if (m_samples > 1) {
+		if (m_samples > 0) {
 			texture = Texture.createMultisample(GL32.GL_RGBA, m_samples, m_width, m_height);
 		} else {
 			texture = Texture.create(GL32.GL_RGBA, GL32.GL_RGBA, m_width, m_height);

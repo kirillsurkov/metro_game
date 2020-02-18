@@ -4,7 +4,7 @@ import java.io.IOException;
 
 import org.lwjgl.opengl.GL30;
 
-public class TrailShader extends Shader {
+public class TrailShader extends ShaderDraw {
 	public static int A_NUMBER = 1;
 	
 	public TrailShader() throws IOException {

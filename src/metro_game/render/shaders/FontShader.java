@@ -5,7 +5,7 @@ import java.io.IOException;
 import org.joml.Vector4f;
 import org.lwjgl.opengl.GL30;
 
-public class FontShader extends Shader {
+public class FontShader extends ShaderDraw {
 	public FontShader() throws IOException {
 		super("font_shader");
 	}

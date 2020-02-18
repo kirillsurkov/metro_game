@@ -17,7 +17,6 @@ public class ElectronEntity extends PhysicsEntity {
 	private TrailPrimitive m_trail;
 	private ParticleEmitterPrimitive m_particleEmitterPrimitive;
 	private BodyGameInterface m_body;
-	private boolean m_first;
 	
 	public ElectronEntity(Context context, float x, float y) {
 		super(context);
@@ -35,8 +34,6 @@ public class ElectronEntity extends PhysicsEntity {
 		addPrimitive(new ColorPrimitive(0.0f, 1.0f, 1.0f, 1.0f));
 		m_circle = addPrimitive(new CirclePrimitive(x, y, radius, 0.0f));
 		m_body = addBody(new CircleBody(true, x, y, 0.0f, 0.0f, 0.0f, 0.0f, radius));
-		
-		m_first = true;
 	}
 	
 	public void getPosition(double delta, float[] x, float[] y) {
@@ -61,11 +58,7 @@ public class ElectronEntity extends PhysicsEntity {
 		
 		m_particleEmitterPrimitive.setPosition(srcX, srcY);
 		
-		m_particleEmitterPrimitive.setEmitCount(0);
-		if (m_first) {
-			//m_first = false;
-			m_particleEmitterPrimitive.setEmitCount(1);
-		}
+		m_particleEmitterPrimitive.setEmitCount(1);
 		
 		float[] dstX = new float[1];
 		float[] dstY = new float[1];

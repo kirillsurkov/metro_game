@@ -1,12 +1,15 @@
 #version 130
 
-uniform mat4 u_mvp;
-uniform vec2 u_textureSize;
-
-in vec2 a_position;
 out vec2 v_uv;
 
 void main() {
-	v_uv = a_position;
-	gl_Position = u_mvp * vec4(a_position, 0.0, 1.0);
+	vec2 pos = vec2(0.0); 
+	switch (gl_VertexID) {
+		case 0: pos = vec2( 1.0, -1.0); break;
+		case 1: pos = vec2( 1.0,  1.0); break;
+		case 2: pos = vec2(-1.0, -1.0); break;
+		case 3: pos = vec2(-1.0,  1.0); break;
+	}
+	v_uv = (pos + 1) / 2;
+	gl_Position = vec4(pos, 0.0, 1.0);
 }

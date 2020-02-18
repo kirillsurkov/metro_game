@@ -2,10 +2,10 @@
 
 precision highp float;
 
+in float v_lifetime;
+
 out vec4 outColor;
-out vec4 outGlow;
 
 void main() {
-	outColor = vec4(1);
-	outGlow = vec4(0);
+	outColor = v_lifetime * vec4(0.0, 1.0, 1.0, 1.0);
 }

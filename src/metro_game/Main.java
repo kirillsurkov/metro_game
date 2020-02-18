@@ -40,7 +40,7 @@ public class Main {
 				break;
 			}
 			
-			renderer.draw();
+			renderer.draw(delta);
 			
 			framesCounter.step(delta);
 			

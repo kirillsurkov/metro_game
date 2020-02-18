@@ -30,7 +30,9 @@ import metro_game.render.shaders.FontShader;
 import metro_game.render.shaders.GaussianBlurShader;
 import metro_game.render.shaders.ParticleShader;
 import metro_game.render.shaders.Shader;
+import metro_game.render.shaders.ShaderDraw;
 import metro_game.render.shaders.TrailShader;
+import metro_game.render.shaders.TransformParticleShader;
 import metro_game.ui.widgets.Widget;
 
 public class Renderer {
@@ -39,16 +41,18 @@ public class Renderer {
 	private FontCache m_fontCache;
 	private Map<ShaderType, Shader> m_shaderCache;
 	private Shader m_currentShader;
-	private int m_downsampleFactor;
 	private Framebuffer m_fboMultisample;
 	private Texture m_fboMultisampleTextureColor;
 	private Texture m_fboMultisampleTextureGlow;
 	private Framebuffer m_fboRasterize;
 	private Texture m_fboRasterizeTextureColor;
-	private Texture m_fboRasterizeTextureGlow;
-	private Framebuffer m_fboDownsample;
-	private Texture m_fboDownsampleTextureTmp;
-	private Texture m_fboDownsampleTextureGlow;
+	private int m_vfxDownsampleFactor;
+	private Framebuffer m_fboMultisampleVFX;
+	private Texture m_fboMultisampleVFXTextureColor;
+	private Framebuffer m_fboVFX;
+	private Texture m_fboVFXTextureTmp;
+	private Texture m_fboVFXTextureColor;
+	private Texture m_fboVFXTextureGlow;
 	private int m_quadVBO;
 	private int m_quadVAO;
 	private int m_circleSegments;
@@ -57,11 +61,13 @@ public class Renderer {
 	private int m_lineStaticVBO;
 	private int m_lineDynamicVBO;
 	private int m_lineVAO;
-	private int m_particlesVBO;
+	private boolean m_particlesVBOUseFirst;
+	private int m_particlesLifetimesVBO_1;
+	private int m_particlesLifetimesVBO_2;
+	private int m_particlesPositionsVBO;
 	private int m_particlesVAO;
 	private int m_particlesMax;
 	private int m_particlesCount;
-	private float[] m_particles;
 
 	public Renderer(Context context, Game game) {
 		m_context = context;
@@ -79,35 +85,54 @@ public class Renderer {
 			throw new IllegalStateException("Extension ARB_texture_multisample is not available");
 		}
 		
+		if (!capabilities.GL_EXT_framebuffer_multisample_blit_scaled) {
+			throw new IllegalStateException("Extension GL_EXT_framebuffer_multisample_blit_scaled is not available");
+		}
+		
+		if (!capabilities.GL_ARB_instanced_arrays) {
+			throw new IllegalStateException("Extension GL_ARB_instanced_arrays is not available");
+		}
+		
+		if (!capabilities.GL_ARB_draw_instanced) {
+			throw new IllegalStateException("Extension GL_ARB_draw_instanced is not available");			
+		}
+		
+		if (!capabilities.GL_ARB_transform_feedback2) {
+			throw new IllegalStateException("Extension GL_ARB_transform_feedback2 is not available");
+		}
+		
 		GL30.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		GL30.glBlendFunc(GL30.GL_ONE, GL30.GL_ONE_MINUS_SRC_ALPHA);
-		
-		m_downsampleFactor = 2;
 		
 		m_fboMultisample = Framebuffer.create(context.getWidth(), context.getHeight(), FinalShader.SAMPLES);
 		m_fboMultisampleTextureColor = m_fboMultisample.attachTexture();
 		m_fboMultisampleTextureGlow = m_fboMultisample.attachTexture();
 		System.out.println(GL32.glCheckFramebufferStatus(GL32.GL_FRAMEBUFFER));
 		
-		m_fboRasterize = Framebuffer.create(context.getWidth(), context.getHeight(), 1);
+		m_fboRasterize = Framebuffer.create(context.getWidth(), context.getHeight());
 		m_fboRasterizeTextureColor = m_fboRasterize.attachTexture();
-		m_fboRasterizeTextureGlow = m_fboRasterize.attachTexture();
 		System.out.println(GL32.glCheckFramebufferStatus(GL32.GL_FRAMEBUFFER));
 		
-		m_fboDownsample = Framebuffer.create(context.getWidth() / m_downsampleFactor, context.getHeight() / m_downsampleFactor, 1);
-		m_fboDownsampleTextureTmp = m_fboDownsample.attachTexture();
-		m_fboDownsampleTextureGlow = m_fboDownsample.attachTexture();
+		m_vfxDownsampleFactor = 2;
+		
+		m_fboMultisampleVFX = Framebuffer.create(context.getWidth() / m_vfxDownsampleFactor, context.getHeight() / m_vfxDownsampleFactor, FinalShader.SAMPLES / m_vfxDownsampleFactor);
+		m_fboMultisampleVFXTextureColor = m_fboMultisampleVFX.attachTexture();
+		
+		m_fboVFX = Framebuffer.create(context.getWidth() / m_vfxDownsampleFactor, context.getHeight() / m_vfxDownsampleFactor);
+		m_fboVFXTextureTmp = m_fboVFX.attachTexture();
+		m_fboVFXTextureColor = m_fboVFX.attachTexture();
+		m_fboVFXTextureGlow = m_fboVFX.attachTexture();
 		System.out.println(GL32.glCheckFramebufferStatus(GL32.GL_FRAMEBUFFER));
 		
 		float[] quadVertices = new float[] {0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f};
 
-		m_quadVBO = GL30.glGenBuffers();
 		m_quadVAO = GL30.glGenVertexArrays();
+		GL30.glBindVertexArray(m_quadVAO);
+		GL30.glEnableVertexAttribArray(ShaderDraw.A_POSITION);
+		m_quadVBO = GL30.glGenBuffers();
 		GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, m_quadVBO);
 		GL30.glBufferData(GL30.GL_ARRAY_BUFFER, quadVertices, GL30.GL_STATIC_DRAW);
-		GL30.glBindVertexArray(m_quadVAO);
-		GL30.glVertexAttribPointer(Shader.A_POSITION, 2, GL30.GL_FLOAT, false, 0, 0);
-		GL30.glEnableVertexAttribArray(Shader.A_POSITION);
+		GL30.glVertexAttribPointer(ShaderDraw.A_POSITION, 2, GL30.GL_FLOAT, false, 0, 0);
 		
 		m_circleSegments = 16;
 		float[] circleVertices = new float[2 * m_circleSegments];
@@ -116,14 +141,14 @@ public class Renderer {
 			circleVertices[i*2] = (float) Math.cos(angle);
 			circleVertices[i*2 + 1] = (float) Math.sin(angle);
 		}
-		
-		m_circleVBO = GL30.glGenBuffers();
+
 		m_circleVAO = GL30.glGenVertexArrays();
+		GL30.glBindVertexArray(m_circleVAO);
+		GL30.glEnableVertexAttribArray(ShaderDraw.A_POSITION);
+		m_circleVBO = GL30.glGenBuffers();
 		GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, m_circleVBO);
 		GL30.glBufferData(GL30.GL_ARRAY_BUFFER, circleVertices, GL30.GL_STATIC_DRAW);
-		GL30.glBindVertexArray(m_circleVAO);
-		GL30.glVertexAttribPointer(Shader.A_POSITION, 2, GL30.GL_FLOAT, false, 0, 0);
-		GL30.glEnableVertexAttribArray(Shader.A_POSITION);
+		GL30.glVertexAttribPointer(ShaderDraw.A_POSITION, 2, GL30.GL_FLOAT, false, 0, 0);
 		
 		float[] lineVertices = new float[TrailPrimitive.MAX_POINTS * 2];
 		for (int i = 0; i < lineVertices.length; i++) {
@@ -132,33 +157,39 @@ public class Renderer {
 		
 		m_lineVAO = GL30.glGenVertexArrays();
 		GL30.glBindVertexArray(m_lineVAO);
+		GL30.glEnableVertexAttribArray(ShaderDraw.A_POSITION);
+		GL30.glEnableVertexAttribArray(TrailShader.A_NUMBER);
 		m_lineDynamicVBO = GL30.glGenBuffers();
 		GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, m_lineDynamicVBO);
 		GL30.glBufferData(GL30.GL_ARRAY_BUFFER, new float[TrailPrimitive.MAX_POINTS * 4], GL30.GL_DYNAMIC_DRAW);
-		GL30.glVertexAttribPointer(Shader.A_POSITION, 2, GL30.GL_FLOAT, false, 0, 0);
-		GL30.glEnableVertexAttribArray(Shader.A_POSITION);
+		GL30.glVertexAttribPointer(ShaderDraw.A_POSITION, 2, GL30.GL_FLOAT, false, 0, 0);
 		m_lineStaticVBO = GL30.glGenBuffers();
 		GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, m_lineStaticVBO);
 		GL30.glBufferData(GL30.GL_ARRAY_BUFFER, lineVertices, GL30.GL_STATIC_DRAW);
 		GL30.glVertexAttribPointer(TrailShader.A_NUMBER, 1, GL30.GL_FLOAT, false, 0, 0);
-		GL30.glEnableVertexAttribArray(TrailShader.A_NUMBER);
 		
-		m_particlesMax = 10000;
+		m_particlesMax = 500000;
 		m_particlesCount = 0;
-		
-		m_particles = new float[m_particlesMax * 2];
+		m_particlesVBOUseFirst = true;
 		
 		m_particlesVAO = GL30.glGenVertexArrays();
 		GL30.glBindVertexArray(m_particlesVAO);
-		m_particlesVBO = GL30.glGenBuffers();
-		GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, m_particlesVBO);
-		GL30.glBufferData(GL30.GL_ARRAY_BUFFER, m_particles, GL30.GL_DYNAMIC_DRAW);
-		GL30.glVertexAttribPointer(ParticleShader.A_PARTICLE_POS, 2, GL30.GL_FLOAT, false, 0, 0);
-		GL33.glVertexAttribDivisor(ParticleShader.A_PARTICLE_POS, 1);
+		GL30.glEnableVertexAttribArray(ParticleShader.A_PARTICLE_LIFETIME);
 		GL30.glEnableVertexAttribArray(ParticleShader.A_PARTICLE_POS);
+		GL33.glVertexAttribDivisor(ParticleShader.A_PARTICLE_POS, 1);
+		m_particlesLifetimesVBO_1 = GL30.glGenBuffers();
+		GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, m_particlesLifetimesVBO_1);
+		GL30.glBufferData(GL30.GL_ARRAY_BUFFER, new float[m_particlesMax], GL30.GL_STATIC_DRAW);
+		m_particlesLifetimesVBO_2 = GL30.glGenBuffers();
+		GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, m_particlesLifetimesVBO_2);
+		GL30.glBufferData(GL30.GL_ARRAY_BUFFER, new float[m_particlesMax], GL30.GL_STATIC_DRAW);
+		m_particlesPositionsVBO = GL30.glGenBuffers();
+		GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, m_particlesPositionsVBO);
+		GL30.glBufferData(GL30.GL_ARRAY_BUFFER, new float[m_particlesMax * 2], GL30.GL_DYNAMIC_DRAW);
+		GL30.glVertexAttribPointer(ParticleShader.A_PARTICLE_POS, 2, GL30.GL_FLOAT, false, 0, 0);
 		GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, m_circleVBO);
-		GL30.glVertexAttribPointer(Shader.A_POSITION, 2, GL30.GL_FLOAT, false, 0, 0);
-		GL30.glEnableVertexAttribArray(Shader.A_POSITION);
+		GL30.glVertexAttribPointer(ShaderDraw.A_POSITION, 2, GL30.GL_FLOAT, false, 0, 0);
+		GL30.glEnableVertexAttribArray(ShaderDraw.A_POSITION);
 		
 		m_currentShader = null;
 	}
@@ -224,11 +255,23 @@ public class Renderer {
 				}
 				return m_shaderCache.get(shaderType);
 			}
+			case TRANSFORM_PARTICLE: {
+				if (!m_shaderCache.containsKey(shaderType)) {
+					TransformParticleShader shader = new TransformParticleShader();
+					shader.link();
+					m_shaderCache.put(shaderType, shader);
+				}
+				return m_shaderCache.get(shaderType);
+			}
 			}
 		} catch (IOException e) {
 			System.out.println("Shader " + shaderType + " not found");
 		}
 		return null;
+	}
+	
+	private void drawEmpty(int count) {
+		GL30.glDrawArrays(GL30.GL_TRIANGLE_STRIP, 0, 4);
 	}
 	
 	private void drawRect(float width, float height, Matrix4f modelViewProjection) {
@@ -248,7 +291,15 @@ public class Renderer {
 		GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, m_lineDynamicVBO);
 		GL30.glBufferSubData(GL30.GL_ARRAY_BUFFER, 0, vertices);
 		GL30.glBindVertexArray(m_lineVAO);
-		GL30.glDrawArrays(GL30.GL_QUAD_STRIP, 0, count * 2);
+		GL30.glDrawArrays(GL30.GL_TRIANGLE_STRIP, 0, count * 2);
+	}
+	
+	private int getCurrentParticlesLifetimesVBOInput() {
+		return m_particlesVBOUseFirst ? m_particlesLifetimesVBO_1 : m_particlesLifetimesVBO_2;
+	}
+	
+	private int getCurrentParticlesLifetimesVBOOutput() {
+		return m_particlesVBOUseFirst ? m_particlesLifetimesVBO_2 : m_particlesLifetimesVBO_1;
 	}
 	
 	private void drawPrimitive(Primitive primitive, Matrix4f viewProjection, float viewWidth, float viewHeight) {
@@ -347,7 +398,7 @@ public class Renderer {
 			GL30.glEnable(GL30.GL_BLEND);
 			GL30.glEnable(GL30.GL_MULTISAMPLE);
 			GL30.glEnable(GL30.GL_LINE_SMOOTH);
-			drawLine(trail.getVertices(), count, new Matrix4f(viewProjection).mul(model));
+			//drawLine(trail.getVertices(), count, new Matrix4f(viewProjection).mul(model));
 			GL30.glDisable(GL30.GL_LINE_SMOOTH);
 			GL30.glDisable(GL30.GL_MULTISAMPLE);
 			GL30.glDisable(GL30.GL_BLEND);
@@ -363,12 +414,20 @@ public class Renderer {
 			float y = emitter.getY();
 			int count = emitter.getEmitCount();
 			if (count > 0 && count + m_particlesCount < m_particlesMax) {
+				float[] newParticlesLifetimes = new float[count];
 				for (int i = 0; i < count; i++) {
-					m_particles[(m_particlesCount + i) * 2 + 0] = x;
-					m_particles[(m_particlesCount + i) * 2 + 1] = y;
+					newParticlesLifetimes[i] = 0.5f;
 				}
-				GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, m_particlesVBO);
-				GL30.glBufferSubData(GL30.GL_ARRAY_BUFFER, 0, m_particles);
+				
+				float[] newParticlesPositions = new float[count * 2];
+				for (int i = 0; i < count; i++) {
+					newParticlesPositions[i * 2 + 0] = x;
+					newParticlesPositions[i * 2 + 1] = y;
+				}
+				GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, getCurrentParticlesLifetimesVBOInput());
+				GL30.glBufferSubData(GL30.GL_ARRAY_BUFFER, 4 * m_particlesCount, newParticlesLifetimes);
+				GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, m_particlesPositionsVBO);
+				GL30.glBufferSubData(GL30.GL_ARRAY_BUFFER, 8 * m_particlesCount, newParticlesPositions);
 				m_particlesCount += count;
 			}
 			break;
@@ -376,17 +435,7 @@ public class Renderer {
 		}
 	}
 	
-	public void postDraw(Matrix4f viewProjection) {
-		if (m_particlesCount > 0) {
-			ParticleShader shader = (ParticleShader) getShader(ShaderType.PARTICLE);
-			useShader(shader);
-			shader.setMVP(new Matrix4f(viewProjection));
-			GL30.glBindVertexArray(m_particlesVAO);
-			GL31.glDrawArraysInstanced(GL30.GL_TRIANGLE_FAN, 0, m_circleSegments, m_particlesCount);
-		}
-	}
-	
-	private void drawGameEntities(List<GameEntity> gameEntities) {
+	private Matrix4f renderGameEntities(List<GameEntity> gameEntities) {
 		Camera camera = m_game.getCamera();
 		Vector2f cameraPosition = camera.getPosition();
 		float aspect = m_context.getAspect();
@@ -404,10 +453,10 @@ public class Renderer {
 			}
 		}
 		
-		postDraw(viewProjection);
+		return viewProjection;
 	}
 	
-	private void drawUI(Widget root) {
+	private void renderUI(Widget root) {
 		float width = 1.0f;
 		float height = 1.0f;
 		
@@ -428,72 +477,119 @@ public class Renderer {
 		}
 	}
 	
-	public void draw() {
+	public void renderVFX(Matrix4f viewProjection) {
+		GL30.glEnable(GL30.GL_MULTISAMPLE);
+		if (m_particlesCount > 0) {
+			ParticleShader shader = (ParticleShader) getShader(ShaderType.PARTICLE);
+			useShader(shader);
+			shader.setMVP(new Matrix4f(viewProjection));
+			GL30.glBindVertexArray(m_particlesVAO);
+			GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, getCurrentParticlesLifetimesVBOInput());
+			GL30.glVertexAttribPointer(ParticleShader.A_PARTICLE_LIFETIME, 1, GL30.GL_FLOAT, false, 0, 0);
+			GL33.glVertexAttribDivisor(ParticleShader.A_PARTICLE_LIFETIME, 1);
+			GL31.glDrawArraysInstanced(GL30.GL_TRIANGLE_FAN, 0, m_circleSegments, m_particlesCount);
+		}
+		GL30.glDisable(GL30.GL_MULTISAMPLE);
+	}
+	
+	private void blur(Texture vfxTexture) {
+		GaussianBlurShader gaussianBlurShader = (GaussianBlurShader) getShader(ShaderType.GAUSSIAN_BLUR);
+		useShader(gaussianBlurShader);
+		
+		gaussianBlurShader.setTexture(vfxTexture);
+		gaussianBlurShader.setHorizontal(true);
+		GL32.glDrawBuffer(m_fboVFXTextureTmp.getAttachmentId());
+		drawRect(2.0f, 2.0f, new Matrix4f().translate(-1.0f, -1.0f, 0.0f));
+		
+		gaussianBlurShader.setTexture(m_fboVFXTextureTmp);
+		gaussianBlurShader.setHorizontal(false);
+		GL32.glDrawBuffers(vfxTexture.getAttachmentId());
+		drawRect(2.0f, 2.0f, new Matrix4f().translate(-1.0f, -1.0f, 0.0f));
+	}
+	
+	public void draw(double delta) {
 		Scene scene = m_game.getScenes().lastElement();
 		if (scene == null) {
 			return;
 		}
+		
+		TransformParticleShader transformParticleShader = (TransformParticleShader) getShader(ShaderType.TRANSFORM_PARTICLE);
+		useShader(transformParticleShader);
+		transformParticleShader.setDelta(delta);
 
-		GL32.glBindFramebuffer(GL30.GL_FRAMEBUFFER, m_fboMultisample.getId());
+		GL30.glBindVertexArray(m_particlesVAO);
+		GL33.glVertexAttribDivisor(ParticleShader.A_PARTICLE_LIFETIME, 0);
+		GL30.glBindBufferBase(GL30.GL_TRANSFORM_FEEDBACK_BUFFER, 0, getCurrentParticlesLifetimesVBOOutput());
+		GL30.glEnable(GL30.GL_RASTERIZER_DISCARD);
+		GL30.glBeginTransformFeedback(GL30.GL_POINTS);
+		GL30.glDrawArrays(GL30.GL_POINTS, 0, m_particlesCount);
+		GL30.glEndTransformFeedback();
+		GL30.glDisable(GL30.GL_RASTERIZER_DISCARD);
+		
+		m_particlesVBOUseFirst = !m_particlesVBOUseFirst;
+		
+		GL32.glBindFramebuffer(GL30.GL_DRAW_FRAMEBUFFER, m_fboMultisample.getId());
 		GL32.glDrawBuffers(new int[] {m_fboMultisampleTextureColor.getAttachmentId(), m_fboMultisampleTextureGlow.getAttachmentId()});
 		GL32.glClear(GL30.GL_COLOR_BUFFER_BIT | GL30.GL_DEPTH_BUFFER_BIT);
-		drawGameEntities(scene.getGameEntities());
-		drawUI(scene.getRootUI());
+		Matrix4f worldMatrix = renderGameEntities(scene.getGameEntities());
+		renderUI(scene.getRootUI());
+		
+		GL32.glBindFramebuffer(GL30.GL_DRAW_FRAMEBUFFER, m_fboMultisampleVFX.getId());
+		GL32.glDrawBuffer(m_fboMultisampleVFXTextureColor.getAttachmentId());
+		GL30.glViewport(0, 0, m_fboMultisampleVFXTextureColor.getWidth(), m_fboMultisampleVFXTextureColor.getHeight());
+		GL30.glClear(GL30.GL_COLOR_BUFFER_BIT);
+		renderVFX(worldMatrix);
+		
+		GL32.glBindFramebuffer(GL30.GL_READ_FRAMEBUFFER, m_fboMultisample.getId());
 		
 		GL32.glBindFramebuffer(GL30.GL_DRAW_FRAMEBUFFER, m_fboRasterize.getId());
-		
 		GL32.glReadBuffer(m_fboMultisampleTextureColor.getAttachmentId());
 		GL32.glDrawBuffer(m_fboRasterizeTextureColor.getAttachmentId());
 		GL32.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 		GL32.glClear(GL32.GL_COLOR_BUFFER_BIT);
 		GL32.glBlitFramebuffer(0, 0, m_fboMultisample.getWidth(), m_fboMultisample.getHeight(), 0, 0, m_fboRasterize.getWidth(), m_fboRasterize.getHeight(), GL32.GL_COLOR_BUFFER_BIT, GL32.GL_LINEAR);
 		
+		GL32.glBindFramebuffer(GL30.GL_DRAW_FRAMEBUFFER, m_fboVFX.getId());
 		GL32.glReadBuffer(m_fboMultisampleTextureGlow.getAttachmentId());
-		GL32.glDrawBuffer(m_fboRasterizeTextureGlow.getAttachmentId());
+		GL32.glDrawBuffer(m_fboVFXTextureGlow.getAttachmentId());
 		GL32.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 		GL32.glClear(GL32.GL_COLOR_BUFFER_BIT);
-		GL32.glBlitFramebuffer(0, 0, m_fboMultisample.getWidth(), m_fboMultisample.getHeight(), 0, 0, m_fboRasterize.getWidth(), m_fboRasterize.getHeight(), GL32.GL_COLOR_BUFFER_BIT, GL32.GL_LINEAR);
+		GL32.glBlitFramebuffer(0, 0, m_fboMultisample.getWidth(), m_fboMultisample.getHeight(), 0, 0, m_fboVFX.getWidth(), m_fboVFX.getHeight(), GL32.GL_COLOR_BUFFER_BIT, EXTFramebufferMultisampleBlitScaled.GL_SCALED_RESOLVE_NICEST_EXT);
 		
-		GL32.glBindFramebuffer(GL30.GL_READ_FRAMEBUFFER, m_fboRasterize.getId());
-		GL32.glBindFramebuffer(GL30.GL_DRAW_FRAMEBUFFER, m_fboDownsample.getId());
+		GL32.glBindFramebuffer(GL30.GL_READ_FRAMEBUFFER, m_fboMultisampleVFX.getId());
+		GL32.glBindFramebuffer(GL30.GL_DRAW_FRAMEBUFFER, m_fboVFX.getId());
 		
-		GL32.glReadBuffer(m_fboRasterizeTextureGlow.getAttachmentId());
-		GL32.glDrawBuffer(m_fboDownsampleTextureGlow.getAttachmentId());
+		GL32.glReadBuffer(m_fboMultisampleVFXTextureColor.getAttachmentId());
+		GL32.glDrawBuffer(m_fboVFXTextureColor.getAttachmentId());
 		GL32.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 		GL32.glClear(GL32.GL_COLOR_BUFFER_BIT);
-		GL32.glBlitFramebuffer(0, 0, m_fboRasterize.getWidth(), m_fboRasterize.getHeight(), 0, 0, m_fboDownsample.getWidth(), m_fboDownsample.getHeight(), GL32.GL_COLOR_BUFFER_BIT, GL32.GL_LINEAR);
+		GL32.glBlitFramebuffer(0, 0, m_fboMultisampleVFX.getWidth(), m_fboMultisampleVFX.getHeight(), 0, 0, m_fboVFX.getWidth(), m_fboVFX.getHeight(), GL32.GL_COLOR_BUFFER_BIT, EXTFramebufferMultisampleBlitScaled.GL_SCALED_RESOLVE_NICEST_EXT);
 		
-		GL32.glBindFramebuffer(GL30.GL_READ_FRAMEBUFFER, m_fboDownsample.getId());
+		GL32.glBindFramebuffer(GL30.GL_READ_FRAMEBUFFER, m_fboVFX.getId());
 		
-		GL30.glViewport(0, 0, m_fboDownsample.getWidth(), m_fboDownsample.getHeight());
+		GL30.glViewport(0, 0, m_fboVFX.getWidth(), m_fboVFX.getHeight());
 		
-		GaussianBlurShader gaussianBlurShader = (GaussianBlurShader) getShader(ShaderType.GAUSSIAN_BLUR);
-		useShader(gaussianBlurShader);
-		
-		for (int i = 0; i < 1; i++) {
-			gaussianBlurShader.setTexture(m_fboDownsampleTextureGlow);
-			gaussianBlurShader.setHorizontal(true);
-			GL32.glDrawBuffers(new int[] {m_fboDownsampleTextureTmp.getAttachmentId()});
-			drawRect(2.0f, 2.0f, new Matrix4f().translate(-1.0f, -1.0f, 0.0f));
-			
-			gaussianBlurShader.setTexture(m_fboDownsampleTextureTmp);
-			gaussianBlurShader.setHorizontal(false);
-			GL32.glDrawBuffers(new int[] {m_fboDownsampleTextureGlow.getAttachmentId()});
-			drawRect(2.0f, 2.0f, new Matrix4f().translate(-1.0f, -1.0f, 0.0f));
-		}
-		
-		GL30.glViewport(0, 0, m_fboMultisample.getWidth(), m_fboMultisample.getHeight());
+		blur(m_fboVFXTextureColor);
+		blur(m_fboVFXTextureGlow);
 		
 		GL32.glBindFramebuffer(GL30.GL_FRAMEBUFFER, 0);
+		
+		GL30.glViewport(0, 0, m_fboRasterize.getWidth(), m_fboRasterize.getHeight());
+		
 		GL32.glClear(GL30.GL_COLOR_BUFFER_BIT | GL30.GL_DEPTH_BUFFER_BIT);
 
-		GL30.glEnable(GL30.GL_BLEND);
 		FinalShader finalShader = (FinalShader) getShader(ShaderType.FINAL);
 		useShader(finalShader);
-		finalShader.setTexture(m_fboDownsampleTextureGlow);
-		drawRect(2.0f, 2.0f, new Matrix4f().translate(-1.0f, -1.0f, 0.0f));
+		finalShader.setTexture(m_fboVFXTextureGlow);
+		finalShader.setSharpen(false);
+		drawEmpty(4);
+		GL30.glEnable(GL30.GL_BLEND);
+		finalShader.setTexture(m_fboVFXTextureColor);
+		finalShader.setSharpen(false);
+		drawEmpty(4);
 		finalShader.setTexture(m_fboRasterizeTextureColor);
-		drawRect(2.0f, 2.0f, new Matrix4f().translate(-1.0f, -1.0f, 0.0f));
+		finalShader.setSharpen(false);
+		drawEmpty(4);
 		GL30.glDisable(GL30.GL_BLEND);
 	}
 }

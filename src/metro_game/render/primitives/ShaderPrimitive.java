@@ -7,7 +7,8 @@ public class ShaderPrimitive extends Primitive {
 		FONT,
 		TRAIL,
 		GAUSSIAN_BLUR,
-		PARTICLE
+		PARTICLE,
+		TRANSFORM_PARTICLE
 	}
 	
 	private ShaderType m_shaderType;

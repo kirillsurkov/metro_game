@@ -7,7 +7,7 @@ import org.lwjgl.opengl.GL32;
 
 import metro_game.render.Texture;
 
-public class GaussianBlurShader extends Shader {
+public class GaussianBlurShader extends ShaderDraw {
 	public GaussianBlurShader() throws IOException {
 		super("gaussian_blur_shader");
 	}

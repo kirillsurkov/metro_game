@@ -7,7 +7,7 @@ import org.lwjgl.opengl.GL32;
 
 import metro_game.render.Texture;
 
-public class FinalShader extends Shader {
+public class FinalShader extends ShaderDraw {
 	public static int SAMPLES = 4;
 	
 	public FinalShader() throws IOException {
@@ -22,5 +22,10 @@ public class FinalShader extends Shader {
 		
 		int uTextureSize = GL30.glGetUniformLocation(m_program, "u_textureSize");
 		GL32.glUniform2f(uTextureSize, texture.getWidth(), texture.getHeight());
+	}
+	
+	public void setSharpen(boolean sharpen) {
+		int uHorizontal = GL30.glGetUniformLocation(m_program, "u_sharpen");
+		GL32.glUniform1i(uHorizontal, sharpen ? 1 : 0);
 	}
 }

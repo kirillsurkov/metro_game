@@ -52,6 +52,10 @@ public class LevelQuantum0 extends LevelQuantumBase {
 		addAtom(-4.0f, 0.0f);
 		addAtom(4.0f, 0.0f);
 		addAtom(12.0f, 0.0f);
+		addAtom(-12.0f, 5.0f);
+		addAtom(-4.0f, 5.0f);
+		addAtom(4.0f, 5.0f);
+		addAtom(12.0f, 5.0f);
 		addGameEntity(new PlayerEntityGolf(m_context, 0.0f, 6.0f));
 	}
 }
