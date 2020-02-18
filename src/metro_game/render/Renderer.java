@@ -17,6 +17,7 @@ import metro_game.game.entities.GameEntity;
 import metro_game.game.scenes.Scene;
 import metro_game.render.primitives.CirclePrimitive;
 import metro_game.render.primitives.ColorPrimitive;
+import metro_game.render.primitives.ParticleEmitterPrimitive;
 import metro_game.render.primitives.Primitive;
 import metro_game.render.primitives.RectPrimitive;
 import metro_game.render.primitives.ShaderPrimitive;
@@ -27,6 +28,7 @@ import metro_game.render.shaders.DefaultGameShader;
 import metro_game.render.shaders.FinalShader;
 import metro_game.render.shaders.FontShader;
 import metro_game.render.shaders.GaussianBlurShader;
+import metro_game.render.shaders.ParticleShader;
 import metro_game.render.shaders.Shader;
 import metro_game.render.shaders.TrailShader;
 import metro_game.ui.widgets.Widget;
@@ -49,11 +51,17 @@ public class Renderer {
 	private Texture m_fboDownsampleTextureGlow;
 	private int m_quadVBO;
 	private int m_quadVAO;
+	private int m_circleSegments;
 	private int m_circleVBO;
 	private int m_circleVAO;
 	private int m_lineStaticVBO;
 	private int m_lineDynamicVBO;
 	private int m_lineVAO;
+	private int m_particlesVBO;
+	private int m_particlesVAO;
+	private int m_particlesMax;
+	private int m_particlesCount;
+	private float[] m_particles;
 
 	public Renderer(Context context, Game game) {
 		m_context = context;
@@ -66,7 +74,7 @@ public class Renderer {
 		if (!capabilities.OpenGL30) {
 			throw new IllegalStateException("OpenGL 3.0 is not supported");
 		}
-
+		
 		if (!capabilities.GL_ARB_texture_multisample) {
 			throw new IllegalStateException("Extension ARB_texture_multisample is not available");
 		}
@@ -101,9 +109,10 @@ public class Renderer {
 		GL30.glVertexAttribPointer(Shader.A_POSITION, 2, GL30.GL_FLOAT, false, 0, 0);
 		GL30.glEnableVertexAttribArray(Shader.A_POSITION);
 		
-		float[] circleVertices = new float[2 * 16];
-		for (int i = 0; i < 16; i++) {
-			double angle = 2.0f * Math.PI * i / 16.0f;
+		m_circleSegments = 16;
+		float[] circleVertices = new float[2 * m_circleSegments];
+		for (int i = 0; i < m_circleSegments; i++) {
+			double angle = 2.0f * Math.PI * i / m_circleSegments;
 			circleVertices[i*2] = (float) Math.cos(angle);
 			circleVertices[i*2 + 1] = (float) Math.sin(angle);
 		}
@@ -133,6 +142,23 @@ public class Renderer {
 		GL30.glBufferData(GL30.GL_ARRAY_BUFFER, lineVertices, GL30.GL_STATIC_DRAW);
 		GL30.glVertexAttribPointer(TrailShader.A_NUMBER, 1, GL30.GL_FLOAT, false, 0, 0);
 		GL30.glEnableVertexAttribArray(TrailShader.A_NUMBER);
+		
+		m_particlesMax = 10000;
+		m_particlesCount = 0;
+		
+		m_particles = new float[m_particlesMax * 2];
+		
+		m_particlesVAO = GL30.glGenVertexArrays();
+		GL30.glBindVertexArray(m_particlesVAO);
+		m_particlesVBO = GL30.glGenBuffers();
+		GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, m_particlesVBO);
+		GL30.glBufferData(GL30.GL_ARRAY_BUFFER, m_particles, GL30.GL_DYNAMIC_DRAW);
+		GL30.glVertexAttribPointer(ParticleShader.A_PARTICLE_POS, 2, GL30.GL_FLOAT, false, 0, 0);
+		GL33.glVertexAttribDivisor(ParticleShader.A_PARTICLE_POS, 1);
+		GL30.glEnableVertexAttribArray(ParticleShader.A_PARTICLE_POS);
+		GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, m_circleVBO);
+		GL30.glVertexAttribPointer(Shader.A_POSITION, 2, GL30.GL_FLOAT, false, 0, 0);
+		GL30.glEnableVertexAttribArray(Shader.A_POSITION);
 		
 		m_currentShader = null;
 	}
@@ -190,6 +216,14 @@ public class Renderer {
 				}
 				return m_shaderCache.get(shaderType);
 			}
+			case PARTICLE: {
+				if (!m_shaderCache.containsKey(shaderType)) {
+					ParticleShader shader = new ParticleShader();
+					shader.link();
+					m_shaderCache.put(shaderType, shader);
+				}
+				return m_shaderCache.get(shaderType);
+			}
 			}
 		} catch (IOException e) {
 			System.out.println("Shader " + shaderType + " not found");
@@ -206,7 +240,7 @@ public class Renderer {
 	private void drawCircle(float radius, Matrix4f modelViewProjection) {
 		m_currentShader.setMVP(new Matrix4f(modelViewProjection).scale(radius, radius, 1.0f));
 		GL30.glBindVertexArray(m_circleVAO);
-		GL30.glDrawArrays(GL30.GL_TRIANGLE_FAN, 0, 16);
+		GL30.glDrawArrays(GL30.GL_TRIANGLE_FAN, 0, m_circleSegments);
 	}
 	
 	private void drawLine(float[] vertices, int count, Matrix4f modelViewProjection) {
@@ -319,6 +353,36 @@ public class Renderer {
 			GL30.glDisable(GL30.GL_BLEND);
 			break;
 		}
+		case PARTICLE_EMITTER: {
+			if (!(m_currentShader instanceof ParticleShader)) {
+				System.out.println("Wrong shader bound for particles");
+				break;
+			}
+			ParticleEmitterPrimitive emitter = (ParticleEmitterPrimitive) primitive;
+			float x = emitter.getX();
+			float y = emitter.getY();
+			int count = emitter.getEmitCount();
+			if (count > 0 && count + m_particlesCount < m_particlesMax) {
+				for (int i = 0; i < count; i++) {
+					m_particles[(m_particlesCount + i) * 2 + 0] = x;
+					m_particles[(m_particlesCount + i) * 2 + 1] = y;
+				}
+				GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, m_particlesVBO);
+				GL30.glBufferSubData(GL30.GL_ARRAY_BUFFER, 0, m_particles);
+				m_particlesCount += count;
+			}
+			break;
+		}
+		}
+	}
+	
+	public void postDraw(Matrix4f viewProjection) {
+		if (m_particlesCount > 0) {
+			ParticleShader shader = (ParticleShader) getShader(ShaderType.PARTICLE);
+			useShader(shader);
+			shader.setMVP(new Matrix4f(viewProjection));
+			GL30.glBindVertexArray(m_particlesVAO);
+			GL31.glDrawArraysInstanced(GL30.GL_TRIANGLE_FAN, 0, m_circleSegments, m_particlesCount);
 		}
 	}
 	
@@ -339,6 +403,8 @@ public class Renderer {
 				drawPrimitive(primitive, viewProjection, width, height);
 			}
 		}
+		
+		postDraw(viewProjection);
 	}
 	
 	private void drawUI(Widget root) {

@@ -22,7 +22,6 @@ public class LevelQuantum0 extends LevelQuantumBase {
 		int maxIndex = 2;
 		float radius = atomRadius;
 		for (int i = 0; i < electrons; i++) {
-			System.out.println("Level " + level + ", index: " + index + " / " + maxIndex);
 			float ang = (float) (Math.PI  * 2.0f * 1.0f * index / maxIndex);
 			float x = atomX + (float) Math.cos(ang) * radius;
 			float y = atomY + (float) Math.sin(ang) * radius;

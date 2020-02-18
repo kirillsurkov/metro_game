@@ -7,6 +7,7 @@ import metro_game.game.physics.bodies.CircleBody;
 import metro_game.game.physics.bodies.Body.BodyGameInterface;
 import metro_game.render.primitives.CirclePrimitive;
 import metro_game.render.primitives.ColorPrimitive;
+import metro_game.render.primitives.ParticleEmitterPrimitive;
 import metro_game.render.primitives.ShaderPrimitive;
 import metro_game.render.primitives.TrailPrimitive;
 import metro_game.render.primitives.ShaderPrimitive.ShaderType;
@@ -14,7 +15,9 @@ import metro_game.render.primitives.ShaderPrimitive.ShaderType;
 public class ElectronEntity extends PhysicsEntity {
 	private CirclePrimitive m_circle;
 	private TrailPrimitive m_trail;
+	private ParticleEmitterPrimitive m_particleEmitterPrimitive;
 	private BodyGameInterface m_body;
+	private boolean m_first;
 	
 	public ElectronEntity(Context context, float x, float y) {
 		super(context);
@@ -24,10 +27,16 @@ public class ElectronEntity extends PhysicsEntity {
 		addPrimitive(new ColorPrimitive(0.0f, 1.0f, 1.0f, 0.25f));
 		m_trail = addPrimitive(new TrailPrimitive());
 		
+		addPrimitive(new ShaderPrimitive(ShaderType.PARTICLE));
+		addPrimitive(new ColorPrimitive(1.0f, 1.0f, 1.0f, 1.0f));
+		m_particleEmitterPrimitive = addPrimitive(new ParticleEmitterPrimitive(x, y));
+		
 		addPrimitive(new ShaderPrimitive(ShaderType.DEFAULT_GAME));
 		addPrimitive(new ColorPrimitive(0.0f, 1.0f, 1.0f, 1.0f));
 		m_circle = addPrimitive(new CirclePrimitive(x, y, radius, 0.0f));
 		m_body = addBody(new CircleBody(true, x, y, 0.0f, 0.0f, 0.0f, 0.0f, radius));
+		
+		m_first = true;
 	}
 	
 	public void getPosition(double delta, float[] x, float[] y) {
@@ -44,11 +53,19 @@ public class ElectronEntity extends PhysicsEntity {
 	public void update(double delta) {
 		float srcX = m_body.getPositionX();
 		float srcY = m_body.getPositionY();
-		
-		m_trail.update(delta, srcX, srcY);
 
 		m_circle.setPosition(srcX, srcY);
 		m_circle.setRotation(m_body.getRotation());
+		
+		m_trail.update(delta, srcX, srcY);
+		
+		m_particleEmitterPrimitive.setPosition(srcX, srcY);
+		
+		m_particleEmitterPrimitive.setEmitCount(0);
+		if (m_first) {
+			//m_first = false;
+			m_particleEmitterPrimitive.setEmitCount(1);
+		}
 		
 		float[] dstX = new float[1];
 		float[] dstY = new float[1];

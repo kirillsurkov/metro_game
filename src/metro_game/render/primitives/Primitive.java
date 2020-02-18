@@ -7,7 +7,8 @@ public class Primitive {
 		RECT,
 		CIRCLE,
 		TEXT,
-		TRAIL
+		TRAIL,
+		PARTICLE_EMITTER
 	}
 	
 	private Type m_type;
