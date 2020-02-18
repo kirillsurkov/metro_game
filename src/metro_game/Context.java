@@ -12,6 +12,7 @@ public class Context {
 	private int m_mouseY;
 	private EventsQueue<UIEvent> m_uiEvents;
 	private EventsQueue<GameEvent> m_gameEvents;
+	private float m_timer;
 	
 	public Context(int width, int height, Strings strings) {
 		m_width = width;
@@ -64,5 +65,13 @@ public class Context {
 	
 	public EventsQueue<GameEvent> getGameEvents() {
 		return m_gameEvents;
+	}
+	
+	public void addTimer(double delta) {
+		m_timer += delta;
+	}
+	
+	public float getTimer() {
+		return m_timer;
 	}
 }

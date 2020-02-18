@@ -5,6 +5,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
@@ -68,12 +71,14 @@ public class Renderer {
 	private int m_particlesVAO;
 	private int m_particlesMax;
 	private int m_particlesCount;
+	private SortedMap<Float, List<Integer>> m_particlesLifetimes;
 
 	public Renderer(Context context, Game game) {
 		m_context = context;
 		m_game = game;
 		m_fontCache = new FontCache(m_context);
 		m_shaderCache = new HashMap<ShaderType, Shader>();
+		m_currentShader = null;
 		
 		GLCapabilities capabilities = GL.createCapabilities();
 		
@@ -168,9 +173,10 @@ public class Renderer {
 		GL30.glBufferData(GL30.GL_ARRAY_BUFFER, lineVertices, GL30.GL_STATIC_DRAW);
 		GL30.glVertexAttribPointer(TrailShader.A_NUMBER, 1, GL30.GL_FLOAT, false, 0, 0);
 		
-		m_particlesMax = 500000;
+		m_particlesMax = 50000;
 		m_particlesCount = 0;
 		m_particlesVBOUseFirst = true;
+		m_particlesLifetimes = new TreeMap<Float, List<Integer>>();
 		
 		m_particlesVAO = GL30.glGenVertexArrays();
 		GL30.glBindVertexArray(m_particlesVAO);
@@ -190,8 +196,6 @@ public class Renderer {
 		GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, m_circleVBO);
 		GL30.glVertexAttribPointer(ShaderDraw.A_POSITION, 2, GL30.GL_FLOAT, false, 0, 0);
 		GL30.glEnableVertexAttribArray(ShaderDraw.A_POSITION);
-		
-		m_currentShader = null;
 	}
 	
 	private void useShader(Shader shader) {
@@ -413,22 +417,65 @@ public class Renderer {
 			float x = emitter.getX();
 			float y = emitter.getY();
 			int count = emitter.getEmitCount();
-			if (count > 0 && count + m_particlesCount < m_particlesMax) {
-				float[] newParticlesLifetimes = new float[count];
+			float timer = m_context.getTimer();
+
+			List<Integer> availableIds = new ArrayList<Integer>();
+			List<Float> toRemove = new ArrayList<Float>();
+			for (Entry<Float, List<Integer>> entry : m_particlesLifetimes.entrySet()) {
+				Float key = entry.getKey();
+				List<Integer> value = entry.getValue();
+				if (key > timer || availableIds.size() == count) {
+					break;
+				}
+				int reusedCount = 0;
+				int targetCount = Math.min(count - availableIds.size(), value.size());
+				for (int i = 0; i < targetCount; i++) {
+					reusedCount++;
+					availableIds.add(value.get(i));
+				}
+				if (reusedCount == value.size()) {
+					toRemove.add(key);
+				}
+				value.removeAll(availableIds);
+			}
+			
+			for (Float key : toRemove) {
+				m_particlesLifetimes.remove(key);
+			}
+			
+			if (count > 0 && m_particlesCount + count - availableIds.size() < m_particlesMax) {
+				int usedAvailableIds = 0;
+				float lifetime = 0.5f;
+				Float particleKey = timer + lifetime;
+				
+				if (!m_particlesLifetimes.containsKey(particleKey)) {
+					m_particlesLifetimes.put(particleKey, new ArrayList<Integer>());
+				}
+				List<Integer> ids = m_particlesLifetimes.get(particleKey);
+
+				GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, getCurrentParticlesLifetimesVBOInput());
+				
 				for (int i = 0; i < count; i++) {
-					newParticlesLifetimes[i] = 0.5f;
+					int id = m_particlesCount + i;
+					if (i < availableIds.size()) {
+						id = availableIds.get(i);
+						usedAvailableIds++;
+					}
+					ids.add(id);
+					GL30.glBufferSubData(GL30.GL_ARRAY_BUFFER, 4 * id, new float[] { lifetime });
 				}
 				
-				float[] newParticlesPositions = new float[count * 2];
-				for (int i = 0; i < count; i++) {
-					newParticlesPositions[i * 2 + 0] = x;
-					newParticlesPositions[i * 2 + 1] = y;
-				}
-				GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, getCurrentParticlesLifetimesVBOInput());
-				GL30.glBufferSubData(GL30.GL_ARRAY_BUFFER, 4 * m_particlesCount, newParticlesLifetimes);
 				GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, m_particlesPositionsVBO);
-				GL30.glBufferSubData(GL30.GL_ARRAY_BUFFER, 8 * m_particlesCount, newParticlesPositions);
-				m_particlesCount += count;
+				
+				for (int i = 0; i < count; i++) {
+					int id = m_particlesCount + i;
+					if (i < availableIds.size()) {
+						id = availableIds.get(i);
+					}
+					GL30.glBufferSubData(GL30.GL_ARRAY_BUFFER, 8 * id, new float[] { x, y });
+				}
+				
+				m_particlesCount += count - usedAvailableIds;
 			}
 			break;
 		}

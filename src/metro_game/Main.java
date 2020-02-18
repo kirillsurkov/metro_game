@@ -33,6 +33,7 @@ public class Main {
 			lastFrame = now;
 			
 			context.getUIEvents().flush();
+			context.addTimer(delta);
 			game.update(delta);
 			
 			if (game.getScenes().size() == 0) {
