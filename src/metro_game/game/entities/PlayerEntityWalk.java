@@ -8,8 +8,6 @@ import metro_game.game.physics.bodies.BoxBody;
 import metro_game.game.physics.bodies.Body.BodyGameInterface;
 import metro_game.render.primitives.ColorPrimitive;
 import metro_game.render.primitives.RectPrimitive;
-import metro_game.render.primitives.ShaderPrimitive;
-import metro_game.render.primitives.ShaderPrimitive.ShaderType;
 import metro_game.ui.events.MouseButtonEvent;
 import metro_game.ui.events.UIEvent;
 
@@ -22,7 +20,6 @@ public class PlayerEntityWalk extends PhysicsEntity {
 	public PlayerEntityWalk(Context context, float x, float y) {
 		super(context);
 		
-		addPrimitive(new ShaderPrimitive(ShaderType.DEFAULT_GAME));
 		addPrimitive(new ColorPrimitive(1.0f, 0.0f, 0.0f, 1.0f));
 		m_rect = addPrimitive(new RectPrimitive(x, y, 1.0f, 1.0f, 0.0f, true));
 		

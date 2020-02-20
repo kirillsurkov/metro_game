@@ -9,7 +9,7 @@ import metro_game.render.Texture;
 
 public class GaussianBlurShader extends ShaderDraw {
 	public GaussianBlurShader() throws IOException {
-		super("gaussian_blur_shader");
+		super(ShaderType.GAUSSIAN_BLUR, "gaussian_blur_shader");
 	}
 	
 	public void setTexture(Texture texture) {

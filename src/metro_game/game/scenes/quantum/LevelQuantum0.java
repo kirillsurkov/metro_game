@@ -11,11 +11,11 @@ public class LevelQuantum0 extends LevelQuantumBase {
 		super(context);
 	}
 	
-	private void addAtom(float atomX, float atomY) {
-		int electrons = 35;
+	private EnemyEntity addAtom(float atomX, float atomY) {
+		int electrons = 100;
 		float atomRadius = 4.0f;
 		float atomRadiusStep = 2.0f;
-		addGameEntity(new EnemyEntity(m_context, Route.Mode.LOOP_START_END, atomX, atomY, 1.0f));
+		EnemyEntity center = addGameEntity(new EnemyEntity(m_context, Route.Mode.LOOP_START_END, atomX, atomY, 2.0f));
 		
 		int level = 0;
 		int index = 0;
@@ -36,8 +36,8 @@ public class LevelQuantum0 extends LevelQuantumBase {
 				@Override
 				public void getPosition(double delta, float[] x, float[] y) {
 					m_timer += delta;
-					x[0] = atomX + (float) Math.cos(currentSpeed * 0.5f * m_timer * Math.PI + ang) * currentRadius;
-					y[0] = atomY + (float) Math.sin(currentSpeed * 0.5f * m_timer * Math.PI + ang) * currentRadius;
+					x[0] = center.getX() + (float) Math.cos(currentSpeed * 0.5f * m_timer * Math.PI + ang) * currentRadius;
+					y[0] = center.getY() + (float) Math.sin(currentSpeed * 0.5f * m_timer * Math.PI + ang) * currentRadius;
 				}
 			});
 			index++;
@@ -51,15 +51,23 @@ public class LevelQuantum0 extends LevelQuantumBase {
 				radius += Math.pow(atomRadiusStep, 1) / Math.pow(level, 0.5f);
 			}
 		}
+		
+		return center;
 	}
 	
 	@Override
 	public void init() {
+		float radius = 11.0f;
 		for (int i = 0; i < 16; i++) {
 			float ang = i * (float) Math.PI * 2 / 16.0f;
-			float x = 10 * (float) Math.cos(ang);
-			float y = 10 * (float) Math.sin(ang);
-			addAtom(x, y);
+			float x = radius * (float) Math.cos(ang);
+			float y = radius * (float) Math.sin(ang);
+			EnemyEntity center = addAtom(x, y);
+
+			for (int j = 0; j < 64; j++) {
+				float waypointAng = (float) Math.PI * 2 * j / 64;
+				center.addWaypoint(radius * (float) Math.cos(ang + waypointAng), radius * (float) Math.sin(ang + waypointAng), 2.0f);
+			}
 		}
 		/*for (int i = 0; i < 16; i++) {
 			addAtom((i - 8) * 5, -5);

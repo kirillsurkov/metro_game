@@ -11,7 +11,7 @@ public class FinalShader extends ShaderDraw {
 	public static int SAMPLES = 4;
 	
 	public FinalShader() throws IOException {
-		super("final_shader");
+		super(ShaderType.FINAL, "final_shader");
 	}
 	
 	public void setTexture(Texture texture) {

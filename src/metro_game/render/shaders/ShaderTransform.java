@@ -10,8 +10,8 @@ import metro_game.Utils;
 public class ShaderTransform extends Shader {
 	private int m_vs;
 	
-	public ShaderTransform(String name) throws IOException {
-		super(name);
+	public ShaderTransform(ShaderType type, String name) throws IOException {
+		super(type, name);
 		
 		m_vs = GL30.glCreateShader(GL30.GL_VERTEX_SHADER);
 		ByteBuffer vsBB = Utils.readFile("res/shaders/" + name + "/vs.glsl");

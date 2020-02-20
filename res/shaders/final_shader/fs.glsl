@@ -17,7 +17,7 @@ void main() {
 		if (a > 0) {
 			color /= a;
 		}
-		color *= sqrt(smoothstep(0.3, 0.6, a));
+		color *= smoothstep(0.1, 0.6, a);
 	}
 	outColor = color;
 }

@@ -9,12 +9,16 @@ import metro_game.Utils;
 
 public class ShaderDraw extends Shader {
 	public static int A_POSITION = 0;
+	public static int A_SCALE = 1;
+	public static int A_OFFSET = 2;
+	public static int A_COLOR = 3;
+	public static int ATTRIBS = 4;
 	
 	private int m_vs;
 	private int m_fs;
 	
-	public ShaderDraw(String name) throws IOException {
-		super(name);
+	public ShaderDraw(ShaderType type, String name) throws IOException {
+		super(type, name);
 		
 		m_vs = GL30.glCreateShader(GL30.GL_VERTEX_SHADER);
 		ByteBuffer vsBB = Utils.readFile("res/shaders/" + name + "/vs.glsl");
@@ -37,6 +41,9 @@ public class ShaderDraw extends Shader {
 		}
 		
 		GL30.glBindAttribLocation(m_program, A_POSITION, "a_position");
+		GL30.glBindAttribLocation(m_program, A_SCALE, "a_scale");
+		GL30.glBindAttribLocation(m_program, A_OFFSET, "a_offset");
+		GL30.glBindAttribLocation(m_program, A_COLOR, "a_color");
 	}
 	
 	@Override

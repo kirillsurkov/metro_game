@@ -11,8 +11,6 @@ import metro_game.game.entities.ChairEntity.ChairOccupier;
 import metro_game.game.physics.bodies.CircleBody;
 import metro_game.render.primitives.CirclePrimitive;
 import metro_game.render.primitives.ColorPrimitive;
-import metro_game.render.primitives.ShaderPrimitive;
-import metro_game.render.primitives.ShaderPrimitive.ShaderType;
 import metro_game.render.primitives.TextPrimitive;
 import metro_game.render.primitives.TextPrimitive.AlignmentX;
 import metro_game.render.primitives.TextPrimitive.AlignmentY;
@@ -31,11 +29,9 @@ public class EnemyEntity extends PhysicsEntity implements ChairOccupier {
 		
 		Vector3f rgb = Utils.hsv2rgb((float) Math.random(), 1.0f, 1.0f);
 		
-		addPrimitive(new ShaderPrimitive(ShaderType.DEFAULT_GAME));
 		addPrimitive(new ColorPrimitive(rgb.x, rgb.y, rgb.z, 1.0f));
 		m_circle = addPrimitive(new CirclePrimitive(x, y, radius, 0.0f));
 		
-		addPrimitive(new ShaderPrimitive(ShaderType.FONT));
 		addPrimitive(new ColorPrimitive(0.0f, 0.0f, 0.0f, 1.0f));
 		m_text = addPrimitive(new TextPrimitive("E", false, 32, 0.0f, x, y, 0.0f, AlignmentX.CENTER, AlignmentY.CENTER));
 		
@@ -68,5 +64,13 @@ public class EnemyEntity extends PhysicsEntity implements ChairOccupier {
 		m_body.setLinearVelocity(0.0f, 0.0f);
 		m_body.setRotation(0.0f);
 		m_body.setAngularVelocity(0.0f);
+	}
+	
+	public float getX() {
+		return m_body.getPositionX();
+	}
+	
+	public float getY() {
+		return m_body.getPositionY();
 	}
 }

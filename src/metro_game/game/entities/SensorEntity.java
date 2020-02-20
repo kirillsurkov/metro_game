@@ -5,8 +5,6 @@ import metro_game.game.physics.bodies.BoxBody;
 import metro_game.game.physics.bodies.Body.BodyGameInterface;
 import metro_game.render.primitives.ColorPrimitive;
 import metro_game.render.primitives.RectPrimitive;
-import metro_game.render.primitives.ShaderPrimitive;
-import metro_game.render.primitives.ShaderPrimitive.ShaderType;
 
 public class SensorEntity extends PhysicsEntity {
 	protected boolean m_active;
@@ -16,9 +14,9 @@ public class SensorEntity extends PhysicsEntity {
 	
 	public SensorEntity(Context context, float x, float y, float width, float height) {
 		super(context);
-
+		
 		m_active = false;
-		addPrimitive(new ShaderPrimitive(ShaderType.DEFAULT_GAME));
+		
 		m_color = addPrimitive(new ColorPrimitive(1.0f, 0.0f, 0.0f, 1.0f));
 		m_rect = addPrimitive(new RectPrimitive(x, y, width, height, 0.0f, true));
 		m_body = addBody(new BoxBody(false, x, y, width, height));

@@ -2,12 +2,14 @@ package metro_game.render;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
+import org.joml.Vector4f;
 import org.lwjgl.opengl.*;
 
 import metro_game.Context;
@@ -20,18 +22,15 @@ import metro_game.render.primitives.ColorPrimitive;
 import metro_game.render.primitives.ParticleEmitterPrimitive;
 import metro_game.render.primitives.Primitive;
 import metro_game.render.primitives.RectPrimitive;
-import metro_game.render.primitives.ShaderPrimitive;
 import metro_game.render.primitives.TextPrimitive;
-import metro_game.render.primitives.TrailPrimitive;
-import metro_game.render.primitives.ShaderPrimitive.ShaderType;
 import metro_game.render.shaders.DefaultGameShader;
 import metro_game.render.shaders.FinalShader;
 import metro_game.render.shaders.FontShader;
 import metro_game.render.shaders.GaussianBlurShader;
 import metro_game.render.shaders.ParticleShader;
 import metro_game.render.shaders.Shader;
+import metro_game.render.shaders.Shader.ShaderType;
 import metro_game.render.shaders.ShaderDraw;
-import metro_game.render.shaders.TrailShader;
 import metro_game.render.shaders.TransformParticleShader;
 import metro_game.ui.widgets.Widget;
 
@@ -41,6 +40,7 @@ public class Renderer {
 	private FontCache m_fontCache;
 	private Map<ShaderType, Shader> m_shaderCache;
 	private Shader m_currentShader;
+	private Vector4f m_currentColor;
 	private ParticleSystem m_particleSystem;
 	private Framebuffer m_fboMultisample;
 	private Texture m_fboMultisampleTextureColor;
@@ -48,20 +48,19 @@ public class Renderer {
 	private Framebuffer m_fboRasterize;
 	private Texture m_fboRasterizeTextureColor;
 	private int m_vfxDownsampleFactor;
-	private Framebuffer m_fboMultisampleVFX;
-	private Texture m_fboMultisampleVFXTextureColor;
 	private Framebuffer m_fboVFX;
 	private Texture m_fboVFXTextureTmp;
 	private Texture m_fboVFXTextureColor;
 	private Texture m_fboVFXTextureGlow;
-	private int m_quadVBO;
 	private int m_quadVAO;
-	private int m_circleSegments;
-	private int m_circleVBO;
+	private int m_quadVBO;
 	private int m_circleVAO;
-	private int m_lineStaticVBO;
-	private int m_lineDynamicVBO;
-	private int m_lineVAO;
+	private int m_circleSegments;
+	private int m_circleShapeVBO;
+	private int m_circlesCount;
+	private int m_circlesDataVBO;
+	private int m_circlesBufferSize;
+	private float[] m_circlesDataBuffer;
 
 	public Renderer(Context context, Game game) {
 		m_context = context;
@@ -72,6 +71,7 @@ public class Renderer {
 		m_fontCache = new FontCache(m_context);
 		m_shaderCache = new HashMap<ShaderType, Shader>();
 		m_currentShader = null;
+		m_currentColor = new Vector4f(0.0f, 0.0f, 0.0f, 0.0f);
 		m_particleSystem = new ParticleSystem();
 		
 		if (!capabilities.OpenGL30) {
@@ -99,7 +99,6 @@ public class Renderer {
 		}
 		
 		GL30.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-		GL30.glBlendFunc(GL30.GL_ONE, GL30.GL_ONE_MINUS_SRC_ALPHA);
 		
 		m_fboMultisample = Framebuffer.create(context.getWidth(), context.getHeight(), FinalShader.SAMPLES);
 		m_fboMultisampleTextureColor = m_fboMultisample.attachTexture();
@@ -112,16 +111,13 @@ public class Renderer {
 		
 		m_vfxDownsampleFactor = 2;
 		
-		m_fboMultisampleVFX = Framebuffer.create(context.getWidth() / m_vfxDownsampleFactor, context.getHeight() / m_vfxDownsampleFactor, FinalShader.SAMPLES / m_vfxDownsampleFactor);
-		m_fboMultisampleVFXTextureColor = m_fboMultisampleVFX.attachTexture();
-		
 		m_fboVFX = Framebuffer.create(context.getWidth() / m_vfxDownsampleFactor, context.getHeight() / m_vfxDownsampleFactor);
 		m_fboVFXTextureTmp = m_fboVFX.attachTexture();
 		m_fboVFXTextureColor = m_fboVFX.attachTexture();
 		m_fboVFXTextureGlow = m_fboVFX.attachTexture();
 		System.out.println(GL32.glCheckFramebufferStatus(GL32.GL_FRAMEBUFFER));
 		
-		float[] quadVertices = new float[] {0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f};
+		float[] quadVertices = new float[] {1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f};
 
 		m_quadVAO = GL30.glGenVertexArrays();
 		GL30.glBindVertexArray(m_quadVAO);
@@ -135,35 +131,31 @@ public class Renderer {
 		float[] circleVertices = new float[2 * m_circleSegments];
 		for (int i = 0; i < m_circleSegments; i++) {
 			double angle = 2.0f * Math.PI * i / m_circleSegments;
-			circleVertices[i*2] = (float) Math.cos(angle);
-			circleVertices[i*2 + 1] = (float) Math.sin(angle);
+			circleVertices[i * 2 + 0] = (float) Math.cos(angle);
+			circleVertices[i * 2 + 1] = (float) Math.sin(angle);
 		}
+		
+		m_circlesCount = 0;
+		m_circlesBufferSize = 0;
 
 		m_circleVAO = GL30.glGenVertexArrays();
 		GL30.glBindVertexArray(m_circleVAO);
 		GL30.glEnableVertexAttribArray(ShaderDraw.A_POSITION);
-		m_circleVBO = GL30.glGenBuffers();
-		GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, m_circleVBO);
+		GL30.glEnableVertexAttribArray(ShaderDraw.A_SCALE);
+		GL30.glEnableVertexAttribArray(ShaderDraw.A_OFFSET);
+		GL30.glEnableVertexAttribArray(ShaderDraw.A_COLOR);
+		GL33.glVertexAttribDivisor(ShaderDraw.A_SCALE, 1);
+		GL33.glVertexAttribDivisor(ShaderDraw.A_OFFSET, 1);
+		GL33.glVertexAttribDivisor(ShaderDraw.A_COLOR, 1);
+		m_circleShapeVBO = GL30.glGenBuffers();
+		GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, m_circleShapeVBO);
 		GL30.glBufferData(GL30.GL_ARRAY_BUFFER, circleVertices, GL30.GL_STATIC_DRAW);
 		GL30.glVertexAttribPointer(ShaderDraw.A_POSITION, 2, GL30.GL_FLOAT, false, 0, 0);
-		
-		float[] lineVertices = new float[TrailPrimitive.MAX_POINTS * 2];
-		for (int i = 0; i < lineVertices.length; i++) {
-			lineVertices[i] = i;
-		}
-		
-		m_lineVAO = GL30.glGenVertexArrays();
-		GL30.glBindVertexArray(m_lineVAO);
-		GL30.glEnableVertexAttribArray(ShaderDraw.A_POSITION);
-		GL30.glEnableVertexAttribArray(TrailShader.A_NUMBER);
-		m_lineDynamicVBO = GL30.glGenBuffers();
-		GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, m_lineDynamicVBO);
-		GL30.glBufferData(GL30.GL_ARRAY_BUFFER, new float[TrailPrimitive.MAX_POINTS * 4], GL30.GL_DYNAMIC_DRAW);
-		GL30.glVertexAttribPointer(ShaderDraw.A_POSITION, 2, GL30.GL_FLOAT, false, 0, 0);
-		m_lineStaticVBO = GL30.glGenBuffers();
-		GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, m_lineStaticVBO);
-		GL30.glBufferData(GL30.GL_ARRAY_BUFFER, lineVertices, GL30.GL_STATIC_DRAW);
-		GL30.glVertexAttribPointer(TrailShader.A_NUMBER, 1, GL30.GL_FLOAT, false, 0, 0);
+		m_circlesDataVBO = GL30.glGenBuffers();
+		GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, m_circlesDataVBO);
+		GL30.glVertexAttribPointer(ShaderDraw.A_SCALE, 1, GL30.GL_FLOAT, false, 4 * 7, 4 * 0);
+		GL30.glVertexAttribPointer(ShaderDraw.A_OFFSET, 2, GL30.GL_FLOAT, false, 4 * 7, 4 * 1);
+		GL30.glVertexAttribPointer(ShaderDraw.A_COLOR, 4, GL30.GL_FLOAT, false, 4 * 7, 4 * 3);
 	}
 	
 	private void useShader(Shader shader) {
@@ -199,14 +191,6 @@ public class Renderer {
 					shader.use();
 					shader.setSdfPixel((Font.sdfOnEdge / 255.0f) / Font.sdfPadding);
 					shader.setSdfOnEdge(Font.sdfOnEdge / 255.0f);
-					m_shaderCache.put(shaderType, shader);
-				}
-				return m_shaderCache.get(shaderType);
-			}
-			case TRAIL: {
-				if (!m_shaderCache.containsKey(shaderType)) {
-					TrailShader shader = new TrailShader();
-					shader.link();
 					m_shaderCache.put(shaderType, shader);
 				}
 				return m_shaderCache.get(shaderType);
@@ -249,21 +233,7 @@ public class Renderer {
 	private void drawRect(float width, float height, Matrix4f modelViewProjection) {
 		m_currentShader.setMVP(new Matrix4f(modelViewProjection).scale(width, height, 1.0f));
 		GL30.glBindVertexArray(m_quadVAO);
-		GL30.glDrawArrays(GL30.GL_QUADS, 0, 4);
-	}
-	
-	private void drawCircle(float radius, Matrix4f modelViewProjection) {
-		m_currentShader.setMVP(new Matrix4f(modelViewProjection).scale(radius, radius, 1.0f));
-		GL30.glBindVertexArray(m_circleVAO);
-		GL30.glDrawArrays(GL30.GL_TRIANGLE_FAN, 0, m_circleSegments);
-	}
-	
-	private void drawLine(float[] vertices, int count, Matrix4f modelViewProjection) {
-		m_currentShader.setMVP(modelViewProjection);
-		GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, m_lineDynamicVBO);
-		GL30.glBufferSubData(GL30.GL_ARRAY_BUFFER, 0, vertices);
-		GL30.glBindVertexArray(m_lineVAO);
-		GL30.glDrawArrays(GL30.GL_TRIANGLE_STRIP, 0, count * 2);
+		GL30.glDrawArrays(GL30.GL_TRIANGLE_STRIP, 0, 4);
 	}
 	
 	private void drawPrimitive(Primitive primitive, Matrix4f viewProjection, float viewWidth, float viewHeight) {
@@ -273,18 +243,17 @@ public class Renderer {
 		
 		Matrix4f model = new Matrix4f();
 		switch (primitive.getType()) {
-		case SHADER: {
-			ShaderPrimitive shader = (ShaderPrimitive) primitive;
-			useShader(getShader(shader.getShaderType()));
-			break;
-		}
 		case COLOR: {
 			ColorPrimitive color = (ColorPrimitive) primitive;
 			float alpha = color.getA();
-			m_currentShader.setColor(color.getR() * alpha, color.getG() * alpha, color.getB() * alpha, color.getA());
+			m_currentColor.set(color.getR() * alpha, color.getG() * alpha, color.getB() * alpha, alpha);
 			break;
 		}
 		case RECT: {
+			useShader(getShader(ShaderType.DEFAULT_GAME));
+			m_currentShader.setUseUniforms(true);
+			m_currentShader.setColor(m_currentColor);
+			
 			RectPrimitive rect = (RectPrimitive) primitive;
 			float sizeX = rect.getSizeX();
 			float sizeY = rect.getSizeY();
@@ -302,23 +271,33 @@ public class Renderer {
 		}
 		case CIRCLE: {
 			CirclePrimitive circle = (CirclePrimitive) primitive;
-			float radius = circle.getRadius();
-			model.translate(circle.getPositionX(), circle.getPositionY(), 0.0f);
-			model.rotate((float) Math.toRadians(circle.getRotation()), 0.0f, 0.0f, 1.0f);
-			GL30.glEnable(GL30.GL_BLEND);
-			GL30.glEnable(GL30.GL_MULTISAMPLE);
-			drawCircle(radius, new Matrix4f(viewProjection).mul(model));
-			GL30.glDisable(GL30.GL_MULTISAMPLE);
-			GL30.glDisable(GL30.GL_BLEND);
+			
+			if (m_circlesBufferSize == 0) {
+				m_circlesBufferSize = 1;
+				m_circlesDataBuffer = new float[7];
+			} else if (m_circlesBufferSize == m_circlesCount) {
+				m_circlesBufferSize = (int) Math.ceil(m_circlesBufferSize * 1.5f);
+				m_circlesDataBuffer = Arrays.copyOf(m_circlesDataBuffer, m_circlesBufferSize * 7);
+			}
+			
+			m_circlesDataBuffer[m_circlesCount * 7 + 0] = circle.getRadius();
+			m_circlesDataBuffer[m_circlesCount * 7 + 1] = circle.getPositionX();
+			m_circlesDataBuffer[m_circlesCount * 7 + 2] = circle.getPositionY();
+			m_circlesDataBuffer[m_circlesCount * 7 + 3] = m_currentColor.x;
+			m_circlesDataBuffer[m_circlesCount * 7 + 4] = m_currentColor.y;
+			m_circlesDataBuffer[m_circlesCount * 7 + 5] = m_currentColor.z;
+			m_circlesDataBuffer[m_circlesCount * 7 + 6] = m_currentColor.w;
+			
+			m_circlesCount++;
 			break;
 		}
 		case TEXT: {
-			if (!(m_currentShader instanceof FontShader)) {
-				System.out.println("Wrong shader bound for text");
-				break;
-			}
+			FontShader shader = (FontShader) getShader(ShaderType.FONT);
+			useShader(shader);
+			m_currentShader.setUseUniforms(true);
+			m_currentShader.setColor(m_currentColor);
+			
 			TextPrimitive text = (TextPrimitive) primitive;
-			FontShader shader = (FontShader) m_currentShader;
 			shader.setBorder(text.getBorder());
 			shader.setBorderColor(text.getBorderColor());
 			String str = text.getText();
@@ -350,34 +329,31 @@ public class Renderer {
 			GL30.glDisable(GL30.GL_BLEND);
 			break;
 		}
-		case TRAIL: {
-			if (!(m_currentShader instanceof TrailShader)) {
-				System.out.println("Wrong shader bound for trail");
-				break;
-			}
-			TrailPrimitive trail = (TrailPrimitive) primitive;
-			TrailShader shader = (TrailShader) m_currentShader;
-			int count = trail.getVerticesCount();
-			shader.setCount(count);
-			GL30.glEnable(GL30.GL_BLEND);
-			GL30.glEnable(GL30.GL_MULTISAMPLE);
-			GL30.glEnable(GL30.GL_LINE_SMOOTH);
-			//drawLine(trail.getVertices(), count, new Matrix4f(viewProjection).mul(model));
-			GL30.glDisable(GL30.GL_LINE_SMOOTH);
-			GL30.glDisable(GL30.GL_MULTISAMPLE);
-			GL30.glDisable(GL30.GL_BLEND);
-			break;
-		}
 		case PARTICLE_EMITTER: {
-			if (!(m_currentShader instanceof ParticleShader)) {
-				System.out.println("Wrong shader bound for particles");
-				break;
-			}
 			ParticleEmitterPrimitive emitter = (ParticleEmitterPrimitive) primitive;
 			m_particleSystem.emit(emitter.getParticles(), emitter.getLifetime(), m_context.getTimer());
 			emitter.getParticles().clear();
 			break;
 		}
+		}
+	}
+	
+	private void finishRender(Matrix4f viewProjection) {
+		useShader(getShader(ShaderType.DEFAULT_GAME));
+		
+		m_currentShader.setMVP(viewProjection);
+		m_currentShader.setUseUniforms(false);
+		
+		if (m_circlesCount > 0) {
+			GL30.glEnable(GL30.GL_BLEND);
+			GL30.glEnable(GL30.GL_MULTISAMPLE);
+			GL30.glBindVertexArray(m_circleVAO);
+			GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, m_circlesDataVBO);
+			GL30.glBufferData(GL30.GL_ARRAY_BUFFER, m_circlesDataBuffer, GL30.GL_STATIC_DRAW);
+			GL31.glDrawArraysInstanced(GL30.GL_TRIANGLE_FAN, 0, m_circleSegments, m_circlesCount);
+			GL30.glDisable(GL30.GL_MULTISAMPLE);
+			GL30.glDisable(GL30.GL_BLEND);
+			m_circlesCount = 0;
 		}
 	}
 	
@@ -390,6 +366,8 @@ public class Renderer {
 		float width = aspect * scale * 2.0f;
 		float height = scale * 2.0f;
 		
+		GL30.glBlendFunc(GL30.GL_ONE, GL30.GL_ONE_MINUS_SRC_ALPHA);
+		
 		Matrix4f projection = new Matrix4f().ortho(-width / 2.0f, width / 2.0f, height / 2.0f, -height / 2.0f, 1.0f, -1.0f);
 		Matrix4f view = new Matrix4f().translate(-cameraPosition.x, -cameraPosition.y, 0.0f);
 		Matrix4f viewProjection = new Matrix4f(projection).mul(view);
@@ -398,6 +376,12 @@ public class Renderer {
 				drawPrimitive(primitive, viewProjection, width, height);
 			}
 		}
+		
+		GL30.glBlendFunc(GL30.GL_ONE_MINUS_DST_ALPHA, GL30.GL_ONE);
+		
+		finishRender(viewProjection);
+		
+		GL30.glBlendFunc(GL30.GL_ONE, GL30.GL_ONE_MINUS_SRC_ALPHA);
 		
 		return viewProjection;
 	}
@@ -457,8 +441,6 @@ public class Renderer {
 		
 		GL30.glDisable(GL30.GL_BLEND);
 		
-		//GL30.glPolygonMode(GL30.GL_FRONT_AND_BACK, GL30.GL_LINE);
-		
 		TransformParticleShader transformParticleShader = (TransformParticleShader) getShader(ShaderType.TRANSFORM_PARTICLE);
 		useShader(transformParticleShader);
 		transformParticleShader.setDelta(delta);
@@ -470,9 +452,9 @@ public class Renderer {
 		Matrix4f worldMatrix = renderGameEntities(scene.getGameEntities());
 		renderUI(scene.getRootUI());
 		
-		GL32.glBindFramebuffer(GL30.GL_DRAW_FRAMEBUFFER, m_fboMultisampleVFX.getId());
-		GL32.glDrawBuffer(m_fboMultisampleVFXTextureColor.getAttachmentId());
-		GL30.glViewport(0, 0, m_fboMultisampleVFXTextureColor.getWidth(), m_fboMultisampleVFXTextureColor.getHeight());
+		GL32.glBindFramebuffer(GL30.GL_DRAW_FRAMEBUFFER, m_fboVFX.getId());
+		GL32.glDrawBuffer(m_fboVFXTextureColor.getAttachmentId());
+		GL30.glViewport(0, 0, m_fboVFXTextureColor.getWidth(), m_fboVFXTextureColor.getHeight());
 		GL30.glClear(GL30.GL_COLOR_BUFFER_BIT);
 		renderVFX(worldMatrix);
 		
@@ -488,13 +470,6 @@ public class Renderer {
 		GL32.glDrawBuffer(m_fboVFXTextureGlow.getAttachmentId());
 		GL32.glBlitFramebuffer(0, 0, m_fboMultisample.getWidth(), m_fboMultisample.getHeight(), 0, 0, m_fboVFX.getWidth(), m_fboVFX.getHeight(), GL32.GL_COLOR_BUFFER_BIT, EXTFramebufferMultisampleBlitScaled.GL_SCALED_RESOLVE_NICEST_EXT);
 		
-		GL32.glBindFramebuffer(GL30.GL_READ_FRAMEBUFFER, m_fboMultisampleVFX.getId());
-		GL32.glBindFramebuffer(GL30.GL_DRAW_FRAMEBUFFER, m_fboVFX.getId());
-		
-		GL32.glReadBuffer(m_fboMultisampleVFXTextureColor.getAttachmentId());
-		GL32.glDrawBuffer(m_fboVFXTextureColor.getAttachmentId());
-		GL32.glBlitFramebuffer(0, 0, m_fboMultisampleVFX.getWidth(), m_fboMultisampleVFX.getHeight(), 0, 0, m_fboVFX.getWidth(), m_fboVFX.getHeight(), GL32.GL_COLOR_BUFFER_BIT, EXTFramebufferMultisampleBlitScaled.GL_SCALED_RESOLVE_NICEST_EXT);
-		
 		GL32.glBindFramebuffer(GL30.GL_READ_FRAMEBUFFER, m_fboVFX.getId());
 		
 		GL30.glViewport(0, 0, m_fboVFX.getWidth(), m_fboVFX.getHeight());
@@ -507,8 +482,6 @@ public class Renderer {
 		GL32.glClear(GL30.GL_COLOR_BUFFER_BIT);
 		GL30.glEnable(GL30.GL_BLEND);
 		
-		//GL30.glPolygonMode(GL30.GL_FRONT_AND_BACK, GL30.GL_FILL);
-
 		FinalShader finalShader = (FinalShader) getShader(ShaderType.FINAL);
 		useShader(finalShader);
 		finalShader.setTexture(m_fboVFXTextureGlow);

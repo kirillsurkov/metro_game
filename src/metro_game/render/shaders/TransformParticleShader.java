@@ -6,14 +6,12 @@ import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GL32;
 
 public class TransformParticleShader extends ShaderTransform {
-	public static int A_LIFETIME = ParticleShader.A_PARTICLE_LIFETIME;
-	
 	public static int O_LIFETIME = 0;
 	
 	public TransformParticleShader() throws IOException {
-		super("transform_particle_shader");
+		super(ShaderType.TRANSFORM_PARTICLE, "transform_particle_shader");
 		
-		GL30.glBindAttribLocation(m_program, A_LIFETIME, "a_lifetime");
+		GL30.glBindAttribLocation(m_program, ParticleShader.A_PARTICLE_LIFETIME, "a_lifetime");
 		GL30.glTransformFeedbackVaryings(m_program, "o_lifetime", GL30.GL_INTERLEAVED_ATTRIBS);
 	}
 	

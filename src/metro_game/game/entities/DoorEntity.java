@@ -5,8 +5,6 @@ import metro_game.game.physics.bodies.BoxBody;
 import metro_game.game.physics.bodies.Body.BodyGameInterface;
 import metro_game.render.primitives.ColorPrimitive;
 import metro_game.render.primitives.RectPrimitive;
-import metro_game.render.primitives.ShaderPrimitive;
-import metro_game.render.primitives.ShaderPrimitive.ShaderType;
 
 public class DoorEntity extends PhysicsEntity {
 	private boolean m_opened;
@@ -31,7 +29,6 @@ public class DoorEntity extends PhysicsEntity {
 		m_origin_top = y + m_width * 0.25f;
 		m_origin_bottom = y - m_width * 0.25f;
 		
-		addPrimitive(new ShaderPrimitive(ShaderType.DEFAULT_GAME));
 		addPrimitive(new ColorPrimitive(1.0f, 0.0f, 0.0f, 1.0f));
 		
 		m_rect_top = addPrimitive(new RectPrimitive(x, m_origin_top, 0.1f, m_width * 0.5f, 0.0f, true));

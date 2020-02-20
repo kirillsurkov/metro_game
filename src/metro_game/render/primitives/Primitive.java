@@ -2,12 +2,10 @@ package metro_game.render.primitives;
 
 public class Primitive {
 	public enum Type {
-		SHADER,
 		COLOR,
 		RECT,
 		CIRCLE,
 		TEXT,
-		TRAIL,
 		PARTICLE_EMITTER
 	}
 	

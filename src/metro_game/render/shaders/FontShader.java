@@ -7,7 +7,7 @@ import org.lwjgl.opengl.GL30;
 
 public class FontShader extends ShaderDraw {
 	public FontShader() throws IOException {
-		super("font_shader");
+		super(ShaderType.FONT, "font_shader");
 	}
 	
 	public void setTexture(int texID) {

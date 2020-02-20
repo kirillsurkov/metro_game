@@ -16,12 +16,10 @@ public class ParticleSystem {
 	private int m_vao;
 	private int m_lifetimesVBO_1;
 	private int m_lifetimesVBO_2;
-	private int m_lifetimesOrigVBO;
-	private int m_positionsVBO;
-	private int m_colorsVBO;
+	private int m_constDataVBO;
 
 	public ParticleSystem() {
-		m_particlesMax = 500000;
+		m_particlesMax = 100000;
 		m_particleIndex = 0;
 		m_useFirstVBO = true;
 		
@@ -43,20 +41,12 @@ public class ParticleSystem {
 		GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, m_lifetimesVBO_2);
 		GL30.glBufferData(GL30.GL_ARRAY_BUFFER, new float[m_particlesMax], GL30.GL_STATIC_DRAW);
 		
-		m_lifetimesOrigVBO = GL30.glGenBuffers();
-		GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, m_lifetimesOrigVBO);
-		GL30.glBufferData(GL30.GL_ARRAY_BUFFER, new float[m_particlesMax], GL30.GL_DYNAMIC_DRAW);
-		GL30.glVertexAttribPointer(ParticleShader.A_PARTICLE_LIFETIME_ORIG, 1, GL30.GL_FLOAT, false, 0, 0);
-		
-		m_positionsVBO = GL30.glGenBuffers();
-		GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, m_positionsVBO);
-		GL30.glBufferData(GL30.GL_ARRAY_BUFFER, new float[m_particlesMax * 2], GL30.GL_DYNAMIC_DRAW);
-		GL30.glVertexAttribPointer(ParticleShader.A_PARTICLE_POS, 2, GL30.GL_FLOAT, false, 0, 0);
-		
-		m_colorsVBO = GL30.glGenBuffers();
-		GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, m_colorsVBO);
-		GL30.glBufferData(GL30.GL_ARRAY_BUFFER, new float[m_particlesMax * 3], GL30.GL_DYNAMIC_DRAW);
-		GL30.glVertexAttribPointer(ParticleShader.A_PARTICLE_COLOR, 3, GL30.GL_FLOAT, false, 0, 0);
+		m_constDataVBO = GL30.glGenBuffers();
+		GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, m_constDataVBO);
+		GL30.glBufferData(GL30.GL_ARRAY_BUFFER, new float[m_particlesMax + m_particlesMax * 2 + m_particlesMax * 3], GL30.GL_DYNAMIC_DRAW);
+		GL30.glVertexAttribPointer(ParticleShader.A_PARTICLE_LIFETIME_ORIG, 1, GL30.GL_FLOAT, false, 4 * 6, 4 * 0);
+		GL30.glVertexAttribPointer(ParticleShader.A_PARTICLE_POS, 2, GL30.GL_FLOAT, false, 4 * 6, 4 * 1);
+		GL30.glVertexAttribPointer(ParticleShader.A_PARTICLE_COLOR, 3, GL30.GL_FLOAT, false, 4 * 6, 4 * 3);
 	}
 	
 	private int getCurrentLifetimesVBOInput() {
@@ -74,30 +64,24 @@ public class ParticleSystem {
 			int count = Math.min(particles.size(), m_particlesMax - m_particleIndex);
 			
 			float[] lifetimesBuffer = new float[count];
-			float[] positionsBuffer = new float[count * 2];
-			float[] colorsBuffer = new float[count * 3];
+			float[] constDataBuffer = new float[count + count * 2 + count * 3];
 			
 			for (int i = 0; i < count; i++) {
 				Particle particle = particles.get(offset + i);
 				lifetimesBuffer[i] = lifetime;
-				positionsBuffer[i * 2 + 0] = particle.getPositionX();
-				positionsBuffer[i * 2 + 1] = particle.getPositionY();
-				colorsBuffer[i * 3 + 0] = particle.getColorR();
-				colorsBuffer[i * 3 + 1] = particle.getColorG();
-				colorsBuffer[i * 3 + 2] = particle.getColorB();
+				constDataBuffer[i * 6 + 0] = lifetime;
+				constDataBuffer[i * 6 + 1] = particle.position.x;
+				constDataBuffer[i * 6 + 2] = particle.position.y;
+				constDataBuffer[i * 6 + 3] = particle.color.x;
+				constDataBuffer[i * 6 + 4] = particle.color.y;
+				constDataBuffer[i * 6 + 5] = particle.color.z;
 			}
 			
 			GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, getCurrentLifetimesVBOInput());
 			GL30.glBufferSubData(GL30.GL_ARRAY_BUFFER, 4 * m_particleIndex, lifetimesBuffer);
 			
-			GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, m_lifetimesOrigVBO);
-			GL30.glBufferSubData(GL30.GL_ARRAY_BUFFER, 4 * m_particleIndex, lifetimesBuffer);
-			
-			GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, m_positionsVBO);
-			GL30.glBufferSubData(GL30.GL_ARRAY_BUFFER, 8 * m_particleIndex, positionsBuffer);
-			
-			GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, m_colorsVBO);
-			GL30.glBufferSubData(GL30.GL_ARRAY_BUFFER, 12 * m_particleIndex, colorsBuffer);
+			GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, m_constDataVBO);
+			GL30.glBufferSubData(GL30.GL_ARRAY_BUFFER, m_particleIndex * 4 * 6, constDataBuffer);
 			
 			m_particleIndex = (m_particleIndex + count) % m_particlesMax;
 			
@@ -119,7 +103,7 @@ public class ParticleSystem {
 		GL30.glBindVertexArray(m_vao);
 		GL30.glBindBuffer(GL30.GL_ARRAY_BUFFER, getCurrentLifetimesVBOInput());
 		GL30.glVertexAttribPointer(ParticleShader.A_PARTICLE_LIFETIME, 1, GL30.GL_FLOAT, false, 0, 0);
-		GL33.glVertexAttribDivisor(TransformParticleShader.A_LIFETIME, 0);
+		GL33.glVertexAttribDivisor(ParticleShader.A_PARTICLE_LIFETIME, 0);
 		GL30.glBindBufferBase(GL30.GL_TRANSFORM_FEEDBACK_BUFFER, TransformParticleShader.O_LIFETIME, getCurrentLifetimesVBOOutput());
 		GL30.glEnable(GL30.GL_RASTERIZER_DISCARD);
 		GL30.glBeginTransformFeedback(GL30.GL_POINTS);

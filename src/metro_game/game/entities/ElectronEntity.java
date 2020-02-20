@@ -10,13 +10,9 @@ import metro_game.game.physics.bodies.Body.BodyGameInterface;
 import metro_game.render.primitives.CirclePrimitive;
 import metro_game.render.primitives.ColorPrimitive;
 import metro_game.render.primitives.ParticleEmitterPrimitive;
-import metro_game.render.primitives.ShaderPrimitive;
-import metro_game.render.primitives.TrailPrimitive;
-import metro_game.render.primitives.ShaderPrimitive.ShaderType;
 
 public class ElectronEntity extends PhysicsEntity {
 	private CirclePrimitive m_circle;
-	private TrailPrimitive m_trail;
 	private ParticleEmitterPrimitive m_particleEmitterPrimitive;
 	private BodyGameInterface m_body;
 	private int m_color;
@@ -26,15 +22,8 @@ public class ElectronEntity extends PhysicsEntity {
 		float radius = 0.05f;
 		m_color = 0;
 		
-		addPrimitive(new ShaderPrimitive(ShaderType.TRAIL));
-		addPrimitive(new ColorPrimitive(0.0f, 1.0f, 1.0f, 0.25f));
-		m_trail = addPrimitive(new TrailPrimitive());
-		
-		addPrimitive(new ShaderPrimitive(ShaderType.PARTICLE));
-		addPrimitive(new ColorPrimitive(1.0f, 1.0f, 1.0f, 1.0f));
 		m_particleEmitterPrimitive = addPrimitive(new ParticleEmitterPrimitive(lifetime));
 		
-		addPrimitive(new ShaderPrimitive(ShaderType.DEFAULT_GAME));
 		addPrimitive(new ColorPrimitive(0.0f, 1.0f, 1.0f, 1.0f));
 		m_circle = addPrimitive(new CirclePrimitive(x, y, radius, 0.0f));
 		m_body = addBody(new CircleBody(true, x, y, 0.0f, 0.0f, 0.0f, 0.0f, radius));
@@ -66,8 +55,6 @@ public class ElectronEntity extends PhysicsEntity {
 
 		m_circle.setPosition(srcX, srcY);
 		m_circle.setRotation(m_body.getRotation());
-		
-		m_trail.update(delta, srcX, srcY);
 		
 		float[] dstX = new float[1];
 		float[] dstY = new float[1];

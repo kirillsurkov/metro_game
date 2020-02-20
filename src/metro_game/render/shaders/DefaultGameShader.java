@@ -4,6 +4,6 @@ import java.io.IOException;
 
 public class DefaultGameShader extends ShaderDraw {
 	public DefaultGameShader() throws IOException {
-		super("default_game_shader");
+		super(ShaderType.DEFAULT_GAME, "default_game_shader");
 	}
 }
