@@ -21,8 +21,7 @@ public class Framebuffer {
 	public static Framebuffer create(int width, int height, int samples) {
 		int id = GL32.glGenFramebuffers();
 		GL32.glBindFramebuffer(GL30.GL_FRAMEBUFFER, id);
-		GL30.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-		GL30.glEnable(GL30.GL_BLEND);
+		GL30.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 		GL30.glBlendFunc(GL30.GL_ONE, GL30.GL_ONE_MINUS_SRC_ALPHA);
 		return new Framebuffer(id, width, height, samples);
 	}

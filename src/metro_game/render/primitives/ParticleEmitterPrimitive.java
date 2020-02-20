@@ -1,34 +1,29 @@
 package metro_game.render.primitives;
 
-import org.joml.Vector2f;
+import java.util.ArrayList;
+import java.util.List;
+
+import metro_game.render.Particle;
 
 public class ParticleEmitterPrimitive extends Primitive {
-	private Vector2f m_position;
-	private int m_emitCount;
+	private List<Particle> m_particles;
+	private float m_lifetime;
 	
-	public ParticleEmitterPrimitive(float x, float y) {
+	public ParticleEmitterPrimitive(float lifetime) {
 		super(Type.PARTICLE_EMITTER);
-		m_position = new Vector2f(x, y);
-		m_emitCount = 0;
+		m_particles = new ArrayList<Particle>();
+		m_lifetime = lifetime;
 	}
 	
-	public void setPosition(float x, float y) {
-		m_position.set(x, y);
+	public void emit(float x, float y, float r, float g, float b) {
+		m_particles.add(new Particle(x, y, r, g, b));
 	}
 	
-	public float getX() {
-		return m_position.x;
+	public List<Particle> getParticles() {
+		return m_particles;
 	}
 	
-	public float getY() {
-		return m_position.y;
-	}
-	
-	public void setEmitCount(int count) {
-		m_emitCount = count;
-	}
-	
-	public int getEmitCount() {
-		return m_emitCount;
+	public float getLifetime() {
+		return m_lifetime;
 	}
 }

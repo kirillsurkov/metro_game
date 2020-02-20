@@ -6,7 +6,7 @@ import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GL32;
 
 public class TransformParticleShader extends ShaderTransform {
-	public static int A_LIFETIME = 1;
+	public static int A_LIFETIME = ParticleShader.A_PARTICLE_LIFETIME;
 	
 	public static int O_LIFETIME = 0;
 	

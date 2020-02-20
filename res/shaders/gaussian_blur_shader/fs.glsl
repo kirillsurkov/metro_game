@@ -48,5 +48,5 @@ vec4 blur5(sampler2D image, vec2 uv, vec2 resolution, vec2 direction) {
 }
 
 void main() {
-	outColor = blur5(u_texture, v_uv, u_textureSize, vec2(u_horizontal, !u_horizontal));
+	outColor = blur13(u_texture, v_uv, u_textureSize, vec2(u_horizontal, !u_horizontal));
 }

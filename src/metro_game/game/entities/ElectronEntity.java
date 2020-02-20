@@ -1,8 +1,10 @@
 package metro_game.game.entities;
 
 import org.joml.Vector2f;
+import org.joml.Vector3f;
 
 import metro_game.Context;
+import metro_game.Utils;
 import metro_game.game.physics.bodies.CircleBody;
 import metro_game.game.physics.bodies.Body.BodyGameInterface;
 import metro_game.render.primitives.CirclePrimitive;
@@ -17,10 +19,12 @@ public class ElectronEntity extends PhysicsEntity {
 	private TrailPrimitive m_trail;
 	private ParticleEmitterPrimitive m_particleEmitterPrimitive;
 	private BodyGameInterface m_body;
+	private int m_color;
 	
-	public ElectronEntity(Context context, float x, float y) {
+	public ElectronEntity(Context context, float x, float y, float lifetime) {
 		super(context);
 		float radius = 0.05f;
+		m_color = 0;
 		
 		addPrimitive(new ShaderPrimitive(ShaderType.TRAIL));
 		addPrimitive(new ColorPrimitive(0.0f, 1.0f, 1.0f, 0.25f));
@@ -28,7 +32,7 @@ public class ElectronEntity extends PhysicsEntity {
 		
 		addPrimitive(new ShaderPrimitive(ShaderType.PARTICLE));
 		addPrimitive(new ColorPrimitive(1.0f, 1.0f, 1.0f, 1.0f));
-		m_particleEmitterPrimitive = addPrimitive(new ParticleEmitterPrimitive(x, y));
+		m_particleEmitterPrimitive = addPrimitive(new ParticleEmitterPrimitive(lifetime));
 		
 		addPrimitive(new ShaderPrimitive(ShaderType.DEFAULT_GAME));
 		addPrimitive(new ColorPrimitive(0.0f, 1.0f, 1.0f, 1.0f));
@@ -50,15 +54,20 @@ public class ElectronEntity extends PhysicsEntity {
 	public void update(double delta) {
 		float srcX = m_body.getPositionX();
 		float srcY = m_body.getPositionY();
+		
+		Vector2f dpos = new Vector2f(m_circle.getPositionX(), m_circle.getPositionY()).sub(srcX, srcY);
+		int count = (int) Math.ceil(dpos.length() / 0.1f);
+		for (int i = 0; i < count; i++) {
+			float x = srcX + dpos.x * (float) i / count;
+			float y = srcY + dpos.y * (float) i / count;
+			Vector3f color = Utils.hsv2rgb((m_color++ % 256) / 256.0f, 1.0f, 1.0f);
+			m_particleEmitterPrimitive.emit(x, y, color.x, color.y, color.z);
+		}
 
 		m_circle.setPosition(srcX, srcY);
 		m_circle.setRotation(m_body.getRotation());
 		
 		m_trail.update(delta, srcX, srcY);
-		
-		m_particleEmitterPrimitive.setPosition(srcX, srcY);
-		
-		m_particleEmitterPrimitive.setEmitCount(1);
 		
 		float[] dstX = new float[1];
 		float[] dstY = new float[1];
